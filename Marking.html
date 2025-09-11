@@ -1,559 +1,225 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>Assignment Marking Script</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 20px; background:#f6f8fa; color:#111; }
-    h1 { margin:0 0 12px 0; font-size:22px; }
-    .container { max-width:1100px; margin:0 auto; background:white; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(20,30,40,0.08); }
-    .section { margin: 14px 0; padding:12px; border-radius:6px; background:#fbfdff; border:1px solid #eef3fb; }
-    .line { display:flex; align-items:flex-start; gap:10px; padding:6px 0; }
-    .line input[type=checkbox] { margin-top:6px; }
-    label { user-select:none; }
-    .meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
-    .stat { background:#fff; padding:8px 10px; border-radius:6px; border:1px solid #e6eef8; }
-    textarea { width:100%; min-height:140px; resize:vertical; padding:10px; border-radius:6px; border:1px solid #e6eef8; font-family:monospace; }
-    .controls { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-    button { padding:8px 12px; border-radius:6px; border:1px solid #cbd8f0; background:#eef5ff; cursor:pointer; }
-    .small { font-size:13px; color:#444; }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .col { flex:1 1 300px; min-width:220px; }
-    .label-muted { color:#666; font-size:13px; }
-    .danger { color:#9b1c1c; font-weight:600; }
-    .ok { color:#1b6b18; font-weight:600; }
-    .score { font-weight:700; font-size:18px; }
-    .muted-box { padding:8px; border-radius:6px; background:#fff; border:1px solid #eef3fb; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { margin-bottom: 20px; }
+    h2 { margin-top: 20px; }
+    ul { list-style: none; padding-left: 0; }
+    li { margin: 5px 0; }
+    input[type="checkbox"] { margin-right: 8px; }
+    #overallComment {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      min-height: 50px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Assignment Marking Script — Interactive</h1>
-    <p class="small">Check items to apply deductions. Each checked item appends its comment to the Overall Comment box and reduces the score.</p>
-
-    <div class="section">
-      <strong>Summary</strong>
-      <div class="meta" style="margin-top:8px;">
-        <div class="stat"><span class="label-muted">Total deductions:</span> <span id="totalDeductions">0</span> / 100</div>
-        <div class="stat"><span class="label-muted">Late penalty marks:</span> <span id="latePenaltyMarks">0</span></div>
-        <div class="stat"><span class="label-muted">GitLab penalty (out of 5):</span> <span id="gitlabPenalty">0</span></div>
-        <div class="stat"><span class="label-muted">Score (out of 100):</span> <span id="finalScore" class="score ok">100</span></div>
-        <div class="stat"><span class="label-muted">Score w/ GitLab (out of 100):</span> <span id="finalScoreWithGit">100</span></div>
-      </div>
-      <div class="row">
-        <div class="col muted-box">
-          <div class="small">Late penalty calculator (policy: &le;1 hour → 0 days; &gt;1h and &lt;24h → 1 day; &gt;=24h → ceil(hours/24) days)</div>
-          <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-            <input id="lateHours" type="number" placeholder="hours late" min="0" style="width:110px; padding:6px; border-radius:6px; border:1px solid #e6eef8;" />
-            <input id="lateMinutes" type="number" placeholder="minutes" min="0" max="59" style="width:100px; padding:6px; border-radius:6px; border:1px solid #e6eef8;" />
-            <input id="marksPerLateDay" type="number" placeholder="marks/day" value="0" style="width:120px; padding:6px; border-radius:6px; border:1px solid #e6eef8;" />
-            <button id="calcLate">Compute</button>
-          </div>
-          <div style="margin-top:8px;"><span class="label-muted">Late days computed:</span> <strong id="lateDays">0</strong></div>
-        </div>
-
-        <div class="col muted-box">
-          <div class="small">GitLab (5 marks) — outside the 100. If not completed, deduct points from the 5. Use check below to mark penalty.</div>
-          <div style="margin-top:8px;">
-            <label class="line"><input type="checkbox" id="gitlab_fail" data-ded="5" data-comment="GitLab requirements not met: deduct up to 5 marks (outside the 100)." /> <strong>GitLab requirements not completed (deduct from 5)</strong></label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- General Deductions -->
-    <div class="section" id="generalDed">
-      <strong>General Deductions (out of 100)</strong>
-      <div class="line"><input type="checkbox" data-id="gd_bad_appearance" data-ded="2" data-comment="Very bad appearance (no CSS / broken layout): -2." /> <label>2 marks — very bad appearance (e.g., no CSS, broken layout)</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gd_poor_code_structure" data-ded="0" data-comment="Poor code structure or lack of proper organisation: deductors applied as judged (enter manual deduction if required)." /> <label>Deduction for poor code structure / lack of proper organisation (manual)</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gd_cdn" data-ded="3" data-comment="Used CDN instead of local static assets (bootstrap/logo): -3." /> <label>3 marks — using CDN instead of local static assets for bootstrap or logo</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gd_node_modules" data-ded="3" data-comment="node_modules not removed: -3." /> <label>3 marks — not removing the node_module</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gd_third_party" data-ded="3" data-comment="Use of third-party library/module not covered in lab (except morgan): -3." /> <label>3 marks — student used third-party library not covered in lab (morgan OK)</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gd_package_json" data-ded="3" data-comment="package.json file removed: -3 (requires manual installation of modules)." /> <label>3 marks — package.json removed</label></div>
-
-      <div style="margin-top:8px;" class="small">General Requirements</div>
-      <div class="line"><input type="checkbox" data-id="gr_not_running" data-ded="10" data-comment="App not running: 10 marks deduction (partial marks may be given per-task based on source code provided)." /> <label>10 marks — if app not running (partial marks given per task if source provided)</label></div>
-
-      <div class="line"><input type="checkbox" data-id="gr_ui_only" data-ded="0" data-comment="UI-only (no backend) — major deduction depending on task: 0 marks here, apply per-task penalties as appropriate." /> <label>If student completed only UI part and not backend function — 0 marks for backend tasks (apply per-task)</label></div>
-    </div>
-
-    <!-- CORE TASKS -->
-    <div class="section">
-      <strong>CORE TASKS (80 marks)</strong>
-
-      <details open style="margin-top:8px;">
-        <summary><strong>Task 1: API Endpoint Design (5 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t1_wrong_method" data-ded="1" data-comment="Incorrect HTTP method used for an entry point: -1 per entry."/> <label>1 mark deduction for each entry point that uses an incorrect method</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_missing_nameid" data-ded="1.5" data-comment="Endpoint missing student name or ID: -1.5 per endpoint missing name/ID."/> <label>1.5 marks — from each endpoint that does not have student name or ID</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_missing_endpoint" data-ded="1" data-comment="Missing endpoint in routing table (e.g., homepage, list, create): -1 per missing endpoint."/> <label>1 mark — missing endpoint in routing table</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_wrong_only" data-ded="1" data-comment="Only wrong endpoint provided: -1."/> <label>1 mark — if there is only a wrong endpoint</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_two_wrong" data-ded="2" data-comment="Two wrong endpoints: -2."/> <label>2 marks — two wrong endpoints</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_more2_wrong" data-ded="3.5" data-comment="More than 2 wrong endpoints: -3.5."/> <label>3.5 marks — more than 2 wrong endpoints</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t1_no_table" data-ded="5" data-comment="No routing table or entirely wrong table: 0 marks for Task 1 (full -5)." /> <label>0 marks if no routing table or entirely wrong table (full 5 marks)</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 2: Data Model Implementation (8 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t2_recipe_missing" data-ded="8" data-comment="Recipe class/object structure completely missing: 0 marks for Task 2." /> <label>0 if Recipe class/object structure is completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_inventory_missing" data-ded="8" data-comment="InventoryItem class/object structure completely missing: 0 marks for Task 2." /> <label>0 if InventoryItem class/object structure completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_recipe_attrs_1" data-ded="1.5" data-comment="Recipe class missing 1 required attribute: -1.5." /> <label>1.5 marks — Recipe class missing 1 required attribute (name, ingredients, instructions, etc.)</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_recipe_attrs_more" data-ded="2.5" data-comment="Recipe class missing more than 1 required attribute: -2.5." /> <label>2.5 marks — Recipe class missing >1 required attribute</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_inv_attrs_1" data-ded="1.5" data-comment="InventoryItem missing 1 required attribute: -1.5." /> <label>1.5 marks — InventoryItem missing 1 required attribute (name, quantity, category, etc.)</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_inv_attrs_more" data-ded="2.5" data-comment="InventoryItem missing >1 attribute: -2.5." /> <label>2.5 marks — InventoryItem missing >1 attribute</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_no_sample_nameid" data-ded="2" data-comment="No sample data includes student's name and ID in inventory sample: -2." /> <label>2 marks — no sample inventory data includes student name and ID</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t2_data_methods_missing" data-ded="1" data-comment="Data manipulation methods missing or non-functional: -1." /> <label>1 mark — data manipulation methods missing or non-functional</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 3: Error Handling Infrastructure (7 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t3_no_error_pages" data-ded="7" data-comment="No error handling pages exist: 0 marks for Task 3." /> <label>0 if no error handling pages exist</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t3_404_missing" data-ded="3" data-comment="404 error page missing/non-functional: -3." /> <label>3 marks — 404 page missing/non-functional</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t3_invalid_data_missing" data-ded="3" data-comment="Invalid data error pages missing: -3." /> <label>3 marks — invalid data error pages missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t3_validate_endpoints" data-ded="2" data-comment="Endpoints don't validate input data properly: -2." /> <label>2 marks — endpoints don't validate input data</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t3_redirects" data-ded="2" data-comment="Error redirects not implemented correctly: -2." /> <label>2 marks — error redirects not implemented correctly</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 4: Application Homepage (6 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t4_missing" data-ded="6" data-comment="Homepage (index.html) completely missing: 0 marks for Task 4." /> <label>0 if homepage (index.html) is completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_nav_missing_many" data-ded="3" data-comment="Navigation links to major features missing/non-functional: -3." /> <label>3 marks — navigation links missing or non-functional</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_nav_1" data-ded="1" data-comment="Only 1 navigation link missing: -1." /> <label>1 mark — only 1 navigation link missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_nav_2" data-ded="2" data-comment="Two navigation links missing: -2." /> <label>2 marks — only 2 links missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_welcome" data-ded="2" data-comment="Missing personalised welcome message with student name and ID: -2." /> <label>2 marks — personalised welcome message missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_logo" data-ded="1" data-comment="Custom logo/branding element missing: -1." /> <label>1 mark — custom logo/branding missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_assets" data-ded="1" data-comment="Static asset serving for images/stylesheets not working: -1." /> <label>1 mark — static asset serving broken</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t4_entry" data-ded="1" data-comment="Homepage doesn't serve as proper entry point: -1." /> <label>1 mark — homepage not proper entry point</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 5: Recipe Creation Interface (8 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t5_missing" data-ded="8" data-comment="Recipe creation form missing: 0 marks for Task 5." /> <label>0 if recipe creation form is completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_missing_attrs_many" data-ded="3" data-comment="Form doesn't capture all required recipe attributes: -3." /> <label>3 marks — form doesn't capture all required recipe attributes</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_missing_attr_1" data-ded="1" data-comment="Form missing 1 required attribute: -1." /> <label>1 mark — only 1 attribute missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_missing_attr_2" data-ded="2" data-comment="Form missing 2 required attributes: -2." /> <label>2 marks — only 2 attributes missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_input_validation" data-ded="2" data-comment="Input validation missing or inadequate: -2." /> <label>2 marks — input validation missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_post_not_work" data-ded="2" data-comment="POST submission not working: -2." /> <label>2 marks — POST submission not working</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t5_no_redirect" data-ded="1" data-comment="Redirect to recipe list after submission missing/broken: -1." /> <label>1 mark — redirect after submission missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 6: Recipe Display System (10 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t6_missing" data-ded="10" data-comment="Recipe display page missing: 0 marks for Task 6." /> <label>0 if recipe display page is completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t6_ejs_missing" data-ded="4" data-comment="EJS templating not used: -4." /> <label>4 marks — EJS templating not used</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t6_not_tabular" data-ded="3" data-comment="Recipes not displayed in organized tabular format: -3." /> <label>3 marks — not displayed in organized tabular format</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t6_attrs_missing" data-ded="2" data-comment="Not all recipe attributes displayed: -2." /> <label>2 marks — not all recipe attributes displayed</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t6_delete_missing" data-ded="1" data-comment="Delete button missing from each recipe row: -1." /> <label>1 mark — delete button missing from each row</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 7: Recipe Deletion Functionality (9 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t7_missing" data-ded="9" data-comment="Recipe deletion functionality missing: 0 marks for Task 7." /> <label>0 if recipe deletion functionality completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t7_form_based" data-ded="4" data-comment="Form-based deletion not implemented: -4." /> <label>4 marks — form-based deletion not implemented</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t7_validation_missing" data-ded="2" data-comment="Validation for recipe existence missing: -2." /> <label>2 marks — validation for recipe existence missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t7_feedback" data-ded="2" data-comment="Feedback for successful/failed deletions inadequate: -2." /> <label>2 marks — feedback inadequate</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t7_no_redirect" data-ded="1" data-comment="Redirect to recipe list after deletion missing/broken: -1." /> <label>1 mark — redirect after deletion missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 8: Inventory Item Creation (8 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t8_missing" data-ded="8" data-comment="Inventory item addition interface missing: 0 marks for Task 8." /> <label>0 if inventory addition interface completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_missing_fields_many" data-ded="3" data-comment="Form doesn't collect all required inventory item fields: -3." /> <label>3 marks — form doesn't collect all required fields</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_missing_field_1" data-ded="1" data-comment="Form missing 1 attribute: -1." /> <label>1 mark — only 1 attribute missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_missing_field_2" data-ded="2" data-comment="Form missing 2 attributes: -2." /> <label>2 marks — only 2 attributes missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_post_not_work" data-ded="2" data-comment="POST request to backend not working: -2." /> <label>2 marks — POST backend not working</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_validation_missing" data-ded="2" data-comment="Data validation missing/inadequate: -2." /> <label>2 marks — data validation missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t8_no_redirect" data-ded="1" data-comment="Redirect to inventory list after submission missing/broken: -1." /> <label>1 mark — redirect after submission missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 9: Inventory Display Dashboard (10 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t9_missing" data-ded="10" data-comment="Inventory display page missing: 0 marks for Task 9." /> <label>0 if inventory display page completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t9_not_displayed" data-ded="3" data-comment="Items not displayed in clear organized format: -3." /> <label>3 marks — items not displayed clearly</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t9_no_expiry_ind" data-ded="2" data-comment="Visual indicators for items approaching expiration missing: -2." /> <label>2 marks — expiry indicators missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t9_no_category" data-ded="2" data-comment="Items not organized by category/storage: -2." /> <label>2 marks — items not organized by category/storage</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t9_no_value_calc" data-ded="2" data-comment="Total inventory value calculation missing/incorrect: -2." /> <label>2 marks — total inventory value calc missing/incorrect</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t9_delete_missing" data-ded="1" data-comment="Delete button missing from each inventory row: -1." /> <label>1 mark — delete button missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>Task 10: Inventory Item Deletion/Removal (9 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="t10_missing" data-ded="9" data-comment="Inventory removal functionality missing: 0 marks for Task 10." /> <label>0 if inventory removal functionality completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t10_id_removal" data-ded="4" data-comment="Removal using inventory ID not implemented: -4." /> <label>4 marks — removal using inventory ID not implemented</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t10_validation_missing" data-ded="2" data-comment="Validation for inventory ID existence missing: -2." /> <label>2 marks — validation for inventory ID existence missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t10_error_handling" data-ded="2" data-comment="Error handling for deletion inadequate: -2." /> <label>2 marks — error handling inadequate</label></div>
-
-          <div class="line"><input type="checkbox" data-id="t10_redirects_missing" data-ded="1" data-comment="Proper redirects after deletion missing/broken: -1." /> <label>1 mark — redirects after deletion missing</label></div>
-        </div>
-      </details>
-    </div>
-
-    <!-- HD Tasks -->
-    <div class="section">
-      <strong>HIGH DISTINCTION TASKS (20 marks)</strong>
-
-      <details open style="margin-top:8px;">
-        <summary><strong>HD Task 1: Advanced Data Filtering (4 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="hd1_missing" data-ded="4" data-comment="Advanced filtering missing: 0 marks for HD1." /> <label>0 if filtering functionality completely missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd1_criteria" data-ded="2" data-comment="Filter criteria (meal type, cuisine, difficulty) not implemented: -2." /> <label>2 marks — filter criteria not implemented</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd1_dynamic" data-ded="1" data-comment="Dynamic result updates not working: -1." /> <label>1 mark — dynamic result updates not working</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd1_ui" data-ded="1" data-comment="UI for filter selection poor/missing: -1." /> <label>1 mark — filter UI missing/poor</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>HD Task 2: Advanced Recipe Features (4 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="hd2_missing" data-ded="4" data-comment="Advanced recipe features missing: 0 marks for HD2." /> <label>0 if no advanced recipe features implemented</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd2_search" data-ded="1" data-comment="Recipe search functionality missing: -1." /> <label>1 mark — recipe search missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd2_scaling" data-ded="1" data-comment="Recipe scaling for servings missing: -1." /> <label>1 mark — scaling missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd2_nutrition" data-ded="1" data-comment="Nutrition information tracking missing: -1." /> <label>1 mark — nutrition info missing</label></div>
-
-          <div class="line"><input type="checkbox" data-id="hd2_rating" data-ded="1" data-comment="Recipe rating/review system missing: -1." /> <label>1 mark — rating/review missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>HD Task 3: Smart Inventory Management (4 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="hd3_missing" data-ded="4" data-comment="Smart inventory features missing: 0 marks for HD3." /> <label>0 if no smart inventory features implemented</label></div>
-          <div class="line"><input type="checkbox" data-id="hd3_lowstock" data-ded="1" data-comment="Low-stock alerts missing: -1." /> <label>1 mark — low-stock alerts missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd3_expiry" data-ded="1" data-comment="Expiration date warnings missing: -1." /> <label>1 mark — expiry warnings missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd3_value_calc" data-ded="1" data-comment="Automatic inventory value calculation missing: -1." /> <label>1 mark — automatic value calc missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd3_category" data-ded="1" data-comment="Category filtering/sorting missing: -1." /> <label>1 mark — category filtering/sorting missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>HD Task 4: Data Export and Import (4 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="hd4_missing" data-ded="4" data-comment="Middleware for data validation missing: 0 marks for HD4." /> <label>0 if middleware for validation missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd4_required" data-ded="2" data-comment="Validation for required fields not implemented: -2." /> <label>2 marks — required-field validation missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd4_types" data-ded="1" data-comment="Data type/value range checks missing: -1." /> <label>1 mark — data type/value checks missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd4_err_msgs" data-ded="1" data-comment="Meaningful error messages for invalid data missing: -1." /> <label>1 mark — meaningful error messages missing</label></div>
-        </div>
-      </details>
-
-      <details style="margin-top:8px;">
-        <summary><strong>HD Task 5: Recipe-Inventory Integration (4 marks)</strong></summary>
-        <div style="margin-top:8px;">
-          <div class="line"><input type="checkbox" data-id="hd5_missing" data-ded="4" data-comment="Recipe-inventory integration missing: 0 marks for HD5." /> <label>0 if no recipe-inventory integration features implemented</label></div>
-          <div class="line"><input type="checkbox" data-id="hd5_availability" data-ded="1.5" data-comment="Ingredient availability checking missing: -1.5." /> <label>1.5 marks — ingredient availability checking missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd5_suggestions" data-ded="1.5" data-comment="Recipe suggestions based on inventory missing: -1.5." /> <label>1.5 marks — recipe suggestions missing</label></div>
-          <div class="line"><input type="checkbox" data-id="hd5_usage" data-ded="1" data-comment="Ingredient usage tracking missing: -1." /> <label>1 mark — ingredient usage tracking missing</label></div>
-        </div>
-      </details>
-    </div>
-
-    <div style="margin-top:12px; display:flex; gap:12px;">
-      <div style="flex:1;">
-        <label class="label-muted">Overall Comment (auto-append from checks)</label>
-        <textarea id="overallComment" placeholder="Comments will be appended here when you check items..."></textarea>
-        <div class="controls">
-          <button id="clearAll">Clear All</button>
-          <button id="copyComment">Copy Overall Comment</button>
-          <button id="exportTxt">Export Report (text)</button>
-        </div>
-      </div>
-
-      <div style="width:360px;">
-        <div class="muted-box">
-          <div><strong>Quick controls</strong></div>
-          <div style="margin-top:8px;">
-            <label><input type="checkbox" id="selectAll" /> Select / Deselect all deduction checkboxes</label>
-          </div>
-
-          <div style="margin-top:10px;">
-            <label class="small">Manually adjust total deduction (if needed):</label>
-            <input id="manualAdjustment" type="number" value="0" style="width:120px; padding:6px; border-radius:6px; border:1px solid #e6eef8;" />
-            <div class="small" style="margin-top:6px;">(This value is added to computed deductions; use for manual judgement.)</div>
-          </div>
-
-          <div style="margin-top:10px;">
-            <div><strong>Computed results</strong></div>
-            <div style="margin-top:8px;"><span class="label-muted">Computed deduction:</span> <span id="computedDed">0</span></div>
-            <div style="margin-top:6px;"><span class="label-muted">Manual adjustment:</span> <span id="manualAdjDisplay">0</span></div>
-            <div style="margin-top:6px;"><span class="label-muted">Final deduction (incl. late & manual):</span> <strong id="finalDeduction">0</strong></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-<script>
-  (function(){
-    function $(s){ return Array.from(document.querySelectorAll(s)); }
-    const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"][data-comment]'));
-    const overall = document.getElementById('overallComment');
-    const totalDeductionsEl = document.getElementById('totalDeductions');
-    const finalScoreEl = document.getElementById('finalScore');
-    const finalScoreWithGit = document.getElementById('finalScoreWithGit');
-    const computedDed = document.getElementById('computedDed');
-    const manualAdj = document.getElementById('manualAdjustment');
-    const manualAdjDisplay = document.getElementById('manualAdjDisplay');
-    const finalDeductionEl = document.getElementById('finalDeduction');
-    const gitlabCheckbox = document.getElementById('gitlab_fail');
-    const gitlabPenaltyEl = document.getElementById('gitlabPenalty');
-    const lateHours = document.getElementById('lateHours');
-    const lateMinutes = document.getElementById('lateMinutes');
-    const calcLateBtn = document.getElementById('calcLate');
-    const lateDaysEl = document.getElementById('lateDays');
-    const marksPerLateDay = document.getElementById('marksPerLateDay');
-    const latePenaltyMarksDisplay = document.getElementById('latePenaltyMarks');
-    const selectAll = document.getElementById('selectAll');
-    const clearAllBtn = document.getElementById('clearAll');
-    const copyBtn = document.getElementById('copyComment');
-    const exportBtn = document.getElementById('exportTxt');
-
-    // Build a map of id->comment/ded
-    const items = [];
-    checkboxes.forEach(cb => {
-      // allow checkboxes without data-comment (gitlab had data-ded but also has data-comment). safe.
-      const id = cb.dataset.id || cb.id || Math.random().toString(36).slice(2,8);
-      const ded = parseFloat(cb.dataset.ded || 0);
-      const comment = cb.dataset.comment || cb.nextSibling && cb.nextSibling.textContent || cb.parentElement.textContent || '';
-      items.push({id, el: cb, ded, comment: comment.trim()});
-    });
-
-    function recompute(){
-      // gather checked items (only those with numeric ded within 0-100)
-      let deduction = 0;
-      const orderedComments = [];
-      items.forEach(it => {
-        if(it.el.checked){
-          // only add to deduction for items that represent marks within 100 (gitlab handled separately)
-          const value = Number(it.ded) || 0;
-          // Many items are intended to reduce the 100; gitlab checkbox uses ded 5 but we treat separately.
-          // We'll add to deduction for all checkboxes except the gitlab checkbox (id 'gitlab_fail' or el id).
-          deduction += value;
-          orderedComments.push(it.comment);
+  <h1>Assignment Marking Script</h1>
+
+  <!-- General Deductions -->
+  <h2>General Deductions</h2>
+  <ul>
+    <li><label><input type="checkbox" value="-2 marks for very bad appearance (no CSS, broken layout)"> -2 marks for very bad appearance (no CSS, broken layout)</label></li>
+    <li><label><input type="checkbox" value="Deduction for poor code structure or lack of proper organisation"> Deduction for poor code structure or lack of proper organisation</label></li>
+    <li><label><input type="checkbox" value="-3 using CDN instead of local static assets"> -3 using CDN instead of local static assets</label></li>
+    <li><label><input type="checkbox" value="-3 not removing node_modules"> -3 not removing node_modules</label></li>
+    <li><label><input type="checkbox" value="-3 unauthorized third-party library (except morgan)"> -3 unauthorized third-party library (except morgan)</label></li>
+    <li><label><input type="checkbox" value="-3 package.json file missing"> -3 package.json file missing</label></li>
+    <li><label><input type="checkbox" value="Late penalty applied according to rules"> Late penalty applied according to rules</label></li>
+    <li><label><input type="checkbox" value="-10 app not running, partial marks only"> -10 app not running, partial marks only</label></li>
+    <li><label><input type="checkbox" value="Major deduction for critical errors preventing testing"> Major deduction for critical errors preventing testing</label></li>
+    <li><label><input type="checkbox" value="0 marks if only UI completed, backend missing"> 0 marks if only UI completed, backend missing</label></li>
+  </ul>
+
+  <!-- GitLab -->
+  <h2>GitLab (5 Marks, penalty only)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="-5 GitLab commits missing before final submission"> -5 GitLab commits missing before final submission</label></li>
+  </ul>
+
+  <!-- Core Tasks -->
+  <h2>Task 1: API Endpoint Design (5 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="-1 incorrect method on an endpoint"> -1 incorrect method on an endpoint</label></li>
+    <li><label><input type="checkbox" value="-1.5 endpoint missing student name or ID"> -1.5 endpoint missing student name or ID</label></li>
+    <li><label><input type="checkbox" value="-1 missing endpoint in routing table"> -1 missing endpoint in routing table</label></li>
+    <li><label><input type="checkbox" value="-1 only one wrong endpoint"> -1 only one wrong endpoint</label></li>
+    <li><label><input type="checkbox" value="-2 two wrong endpoints"> -2 two wrong endpoints</label></li>
+    <li><label><input type="checkbox" value="-3.5 more than two wrong endpoints"> -3.5 more than two wrong endpoints</label></li>
+    <li><label><input type="checkbox" value="0 no routing table or entirely wrong"> 0 no routing table or entirely wrong</label></li>
+  </ul>
+
+  <h2>Task 2: Data Model Implementation (8 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 Recipe class/object missing"> 0 Recipe class/object missing</label></li>
+    <li><label><input type="checkbox" value="0 InventoryItem class/object missing"> 0 InventoryItem class/object missing</label></li>
+    <li><label><input type="checkbox" value="-1.5 Recipe class missing one required attribute"> -1.5 Recipe class missing one required attribute</label></li>
+    <li><label><input type="checkbox" value="-2.5 Recipe class missing more than one attribute"> -2.5 Recipe class missing more than one attribute</label></li>
+    <li><label><input type="checkbox" value="-1.5 InventoryItem class missing one required attribute"> -1.5 InventoryItem class missing one required attribute</label></li>
+    <li><label><input type="checkbox" value="-2.5 InventoryItem class missing more than one attribute"> -2.5 InventoryItem class missing more than one attribute</label></li>
+    <li><label><input type="checkbox" value="-2 sample data missing student name and ID"> -2 sample data missing student name and ID</label></li>
+    <li><label><input type="checkbox" value="-1 data manipulation methods missing or non-functional"> -1 data manipulation methods missing or non-functional</label></li>
+  </ul>
+
+  <h2>Task 3: Error Handling Infrastructure (7 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 no error handling pages"> 0 no error handling pages</label></li>
+    <li><label><input type="checkbox" value="-3 404 error page missing"> -3 404 error page missing</label></li>
+    <li><label><input type="checkbox" value="-3 invalid data error pages missing"> -3 invalid data error pages missing</label></li>
+    <li><label><input type="checkbox" value="-2 input validation missing"> -2 input validation missing</label></li>
+    <li><label><input type="checkbox" value="-2 error redirects not working"> -2 error redirects not working</label></li>
+  </ul>
+
+  <h2>Task 4: Application Homepage (6 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 homepage missing"> 0 homepage missing</label></li>
+    <li><label><input type="checkbox" value="-3 navigation links missing or non-functional"> -3 navigation links missing or non-functional</label></li>
+    <li><label><input type="checkbox" value="-1 only one link missing"> -1 only one link missing</label></li>
+    <li><label><input type="checkbox" value="-2 two links missing"> -2 two links missing</label></li>
+    <li><label><input type="checkbox" value="-3 more than two links missing"> -3 more than two links missing</label></li>
+    <li><label><input type="checkbox" value="-2 missing personalised welcome with student name/ID"> -2 missing personalised welcome with student name/ID</label></li>
+    <li><label><input type="checkbox" value="-1 custom logo/branding missing"> -1 custom logo/branding missing</label></li>
+    <li><label><input type="checkbox" value="-1 static asset serving not working"> -1 static asset serving not working</label></li>
+    <li><label><input type="checkbox" value="-1 homepage not proper entry point"> -1 homepage not proper entry point</label></li>
+  </ul>
+
+  <h2>Task 5: Recipe Creation Interface (8 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 recipe creation form missing"> 0 recipe creation form missing</label></li>
+    <li><label><input type="checkbox" value="-3 form missing required attributes"> -3 form missing required attributes</label></li>
+    <li><label><input type="checkbox" value="-1 one attribute missing"> -1 one attribute missing</label></li>
+    <li><label><input type="checkbox" value="-2 two attributes missing"> -2 two attributes missing</label></li>
+    <li><label><input type="checkbox" value="-3 more than two attributes missing"> -3 more than two attributes missing</label></li>
+    <li><label><input type="checkbox" value="-2 input validation missing or inadequate"> -2 input validation missing or inadequate</label></li>
+    <li><label><input type="checkbox" value="-2 POST request submission not working"> -2 POST request submission not working</label></li>
+    <li><label><input type="checkbox" value="-1 redirect after submission missing/broken"> -1 redirect after submission missing/broken</label></li>
+  </ul>
+
+  <h2>Task 6: Recipe Display System (10 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 recipe display page missing"> 0 recipe display page missing</label></li>
+    <li><label><input type="checkbox" value="-4 EJS templating not used"> -4 EJS templating not used</label></li>
+    <li><label><input type="checkbox" value="-3 recipes not displayed in table"> -3 recipes not displayed in table</label></li>
+    <li><label><input type="checkbox" value="-2 not all attributes displayed"> -2 not all attributes displayed</label></li>
+    <li><label><input type="checkbox" value="-1 delete button missing"> -1 delete button missing</label></li>
+  </ul>
+
+  <h2>Task 7: Recipe Deletion Functionality (9 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 deletion functionality missing"> 0 deletion functionality missing</label></li>
+    <li><label><input type="checkbox" value="-4 form-based deletion not implemented"> -4 form-based deletion not implemented</label></li>
+    <li><label><input type="checkbox" value="-2 validation for recipe existence missing"> -2 validation for recipe existence missing</label></li>
+    <li><label><input type="checkbox" value="-2 deletion feedback inadequate"> -2 deletion feedback inadequate</label></li>
+    <li><label><input type="checkbox" value="-1 redirect after deletion missing/broken"> -1 redirect after deletion missing/broken</label></li>
+  </ul>
+
+  <h2>Task 8: Inventory Item Creation (8 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 inventory item creation missing"> 0 inventory item creation missing</label></li>
+    <li><label><input type="checkbox" value="-3 form missing required fields"> -3 form missing required fields</label></li>
+    <li><label><input type="checkbox" value="-1 one attribute missing"> -1 one attribute missing</label></li>
+    <li><label><input type="checkbox" value="-2 two attributes missing"> -2 two attributes missing</label></li>
+    <li><label><input type="checkbox" value="-3 more than two attributes missing"> -3 more than two attributes missing</label></li>
+    <li><label><input type="checkbox" value="-2 POST request not working"> -2 POST request not working</label></li>
+    <li><label><input type="checkbox" value="-2 validation missing or inadequate"> -2 validation missing or inadequate</label></li>
+    <li><label><input type="checkbox" value="-1 redirect after submission missing/broken"> -1 redirect after submission missing/broken</label></li>
+  </ul>
+
+  <h2>Task 9: Inventory Display Dashboard (10 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 inventory display missing"> 0 inventory display missing</label></li>
+    <li><label><input type="checkbox" value="-3 items not displayed clearly"> -3 items not displayed clearly</label></li>
+    <li><label><input type="checkbox" value="-2 no expiration indicators"> -2 no expiration indicators</label></li>
+    <li><label><input type="checkbox" value="-2 no categorisation by location"> -2 no categorisation by location</label></li>
+    <li><label><input type="checkbox" value="-2 total inventory value missing/incorrect"> -2 total inventory value missing/incorrect</label></li>
+    <li><label><input type="checkbox" value="-1 delete button missing"> -1 delete button missing</label></li>
+  </ul>
+
+  <h2>Task 10: Inventory Item Deletion (9 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 inventory deletion missing"> 0 inventory deletion missing</label></li>
+    <li><label><input type="checkbox" value="-4 deletion using ID not implemented"> -4 deletion using ID not implemented</label></li>
+    <li><label><input type="checkbox" value="-2 validation for inventory ID missing"> -2 validation for inventory ID missing</label></li>
+    <li><label><input type="checkbox" value="-2 error handling inadequate"> -2 error handling inadequate</label></li>
+    <li><label><input type="checkbox" value="-1 redirect after deletion missing/broken"> -1 redirect after deletion missing/broken</label></li>
+  </ul>
+
+  <!-- HD Tasks -->
+  <h2>HD Task 1: Advanced Data Filtering (4 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 filtering missing"> 0 filtering missing</label></li>
+    <li><label><input type="checkbox" value="-2 filter criteria not implemented"> -2 filter criteria not implemented</label></li>
+    <li><label><input type="checkbox" value="-1 dynamic updates not working"> -1 dynamic updates not working</label></li>
+    <li><label><input type="checkbox" value="-1 poor/missing filter UI"> -1 poor/missing filter UI</label></li>
+  </ul>
+
+  <h2>HD Task 2: Advanced Recipe Features (4 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 no advanced features"> 0 no advanced features</label></li>
+    <li><label><input type="checkbox" value="-1 recipe search missing"> -1 recipe search missing</label></li>
+    <li><label><input type="checkbox" value="-1 scaling recipes missing"> -1 scaling recipes missing</label></li>
+    <li><label><input type="checkbox" value="-1 nutrition info missing"> -1 nutrition info missing</label></li>
+    <li><label><input type="checkbox" value="-1 rating/review missing"> -1 rating/review missing</label></li>
+  </ul>
+
+  <h2>HD Task 3: Smart Inventory Management (4 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 smart inventory missing"> 0 smart inventory missing</label></li>
+    <li><label><input type="checkbox" value="-1 low-stock alerts missing"> -1 low-stock alerts missing</label></li>
+    <li><label><input type="checkbox" value="-1 expiration warnings missing"> -1 expiration warnings missing</label></li>
+    <li><label><input type="checkbox" value="-1 auto inventory value calc missing"> -1 auto inventory value calc missing</label></li>
+    <li><label><input type="checkbox" value="-1 category filtering/sorting missing"> -1 category filtering/sorting missing</label></li>
+  </ul>
+
+  <h2>HD Task 4: Data Export and Import (4 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 data validation middleware missing"> 0 data validation middleware missing</label></li>
+    <li><label><input type="checkbox" value="-2 required field validation missing"> -2 required field validation missing</label></li>
+    <li><label><input type="checkbox" value="-1 data type/range checks missing"> -1 data type/range checks missing</label></li>
+    <li><label><input type="checkbox" value="-1 error messages missing"> -1 error messages missing</label></li>
+  </ul>
+
+  <h2>HD Task 5: Recipe-Inventory Integration (4 marks)</h2>
+  <ul>
+    <li><label><input type="checkbox" value="0 no integration implemented"> 0 no integration implemented</label></li>
+    <li><label><input type="checkbox" value="-1.5 ingredient availability check missing"> -1.5 ingredient availability check missing</label></li>
+    <li><label><input type="checkbox" value="-1.5 recipe suggestions missing"> -1.5 recipe suggestions missing</label></li>
+    <li><label><input type="checkbox" value="-1 usage tracking missing"> -1 usage tracking missing</label></li>
+  </ul>
+
+  <!-- Overall Comment -->
+  <h2>Overall Comment</h2>
+  <div id="overallComment"></div>
+
+  <script>
+    function updateComment() {
+      const commentBox = document.getElementById("overallComment");
+      commentBox.innerHTML = ""; // reset
+
+      document.querySelectorAll("h2").forEach(h2 => {
+        const ul = h2.nextElementSibling;
+        if (ul && ul.tagName === "UL") {
+          const checkedItems = Array.from(ul.querySelectorAll("input[type=checkbox]:checked"));
+          if (checkedItems.length > 0) {
+            commentBox.innerHTML += `<b>${h2.textContent}</b><br>`;
+            checkedItems.forEach(cb => {
+              commentBox.innerHTML += cb.value + "<br>";
+            });
+            commentBox.innerHTML += "<br>";
+          }
         }
       });
-
-      // apply manual adjustment
-      const manual = Number(manualAdj.value) || 0;
-      manualAdjDisplay.textContent = manual.toString();
-
-      // late penalty marks were computed earlier and stored in latePenaltyMarksDisplay
-      const latePenaltyMarks = Number(latePenaltyMarksDisplay.textContent) || 0;
-
-      // computedDed shows sum of selected deductions (cap at 100)
-      const computed = deduction;
-      computedDed.textContent = computed.toFixed(2);
-
-      // Final deduction = computed + manual + late penalty (but cap computed part at 100)
-      let finalDed = computed + manual + latePenaltyMarks;
-      if(finalDed > 100) finalDed = 100;
-      finalDeductionEl.textContent = finalDed.toFixed(2);
-
-      // final score out of 100
-      const finalScore = Math.max(0, 100 - finalDed);
-      finalScoreEl.textContent = finalScore.toFixed(2);
-
-      // gitlab penalty (out of 5) handled separate
-      const gitPenalty = gitlabCheckbox.checked ? Number(gitlabCheckbox.dataset.ded || 0) : 0;
-      gitlabPenaltyEl.textContent = gitPenalty.toString();
-
-      // final score with gitlab: gitlab penalty is outside the 100; we show the 100 remains but display remaining GitLab marks
-      // We'll show "Score w/ GitLab (out of 100):" same as finalScore, but indicate GitLab separately. Keep simpler:
-      finalScoreWithGit.textContent = finalScore.toFixed(2);
-
-      // overall comment: concatenate selected comments (unique) in the order checked
-      // We'll use items array to preserve order in DOM.
-      const commentText = orderedComments.join('\\n');
-      overall.value = commentText;
-      totalDeductionsEl.textContent = computed.toFixed(2);
     }
 
-    // initial compute
-    recompute();
-
-    // attach listeners to all relevant checkboxes
-    items.forEach(it => {
-      it.el.addEventListener('change', recompute);
+    document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", updateComment);
     });
-
-    // manual adjustment changes
-    manualAdj.addEventListener('input', recompute);
-
-    // select all toggle
-    selectAll.addEventListener('change', function(){
-      const v = selectAll.checked;
-      items.forEach(it => { it.el.checked = v; });
-      recompute();
-    });
-
-    // clear all
-    clearAllBtn.addEventListener('click', function(){
-      items.forEach(it => it.el.checked = false);
-      manualAdj.value = 0;
-      lateDaysEl.textContent = '0';
-      latePenaltyMarksDisplay.textContent = '0';
-      lateHours.value = '';
-      lateMinutes.value = '';
-      marksPerLateDay.value = '0';
-      overall.value = '';
-      selectAll.checked = false;
-      recompute();
-    });
-
-    // copy comment
-    copyBtn.addEventListener('click', function(){
-      overall.select();
-      document.execCommand('copy');
-      copyBtn.textContent = 'Copied!';
-      setTimeout(()=> copyBtn.textContent = 'Copy Overall Comment', 1200);
-    });
-
-    // late penalty compute
-    calcLateBtn.addEventListener('click', function(){
-      const h = Number(lateHours.value) || 0;
-      const m = Number(lateMinutes.value) || 0;
-      const totalHours = h + (m/60);
-      let days = 0;
-      if(totalHours <= 1) days = 0;
-      else days = Math.ceil(totalHours / 24);
-      lateDaysEl.textContent = String(days);
-      const perDay = Number(marksPerLateDay.value) || 0;
-      const lateMarks = days * perDay;
-      latePenaltyMarksDisplay.textContent = lateMarks.toFixed(2);
-      recompute();
-    });
-
-    // update recompute when marksPerLateDay changes
-    marksPerLateDay.addEventListener('input', function(){ 
-      // recompute late penalty instantly using existing hours/minutes
-      const h = Number(lateHours.value) || 0;
-      const m = Number(lateMinutes.value) || 0;
-      const totalHours = h + (m/60);
-      let days = 0;
-      if(totalHours <= 1) days = 0;
-      else days = Math.ceil(totalHours / 24);
-      lateDaysEl.textContent = String(days);
-      const perDay = Number(marksPerLateDay.value) || 0;
-      const lateMarks = days * perDay;
-      latePenaltyMarksDisplay.textContent = lateMarks.toFixed(2);
-      recompute();
-    });
-
-    // Gitlab checkbox special handling: it's part of items but we want penalty shown separately too
-    gitlabCheckbox.addEventListener('change', recompute);
-
-    // export report
-    exportBtn.addEventListener('click', function(){
-      const report = [];
-      report.push('Assignment Marking Report');
-      report.push('=========================');
-      report.push('Computed deduction: ' + computedDed.textContent + ' marks');
-      report.push('Manual adjustment: ' + (Number(manualAdj.value)||0));
-      report.push('Late penalty marks: ' + latePenaltyMarksDisplay.textContent);
-      report.push('Final deduction: ' + finalDeductionEl.textContent);
-      report.push('Final score (out of 100): ' + finalScoreEl.textContent);
-      report.push('GitLab penalty (out of 5): ' + gitlabPenaltyEl.textContent);
-      report.push('');
-      report.push('Overall comments:');
-      report.push(overall.value || '(none)');
-      const blob = new Blob([report.join('\\n')], {type:'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'marking_report.txt';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
-
-    // Recompute when checkboxes change outside
-    document.querySelectorAll('input[type="checkbox"][data-comment]').forEach(cb=>{
-      cb.addEventListener('change', recompute);
-    });
-
-  })();
-</script>
+  </script>
 </body>
 </html>
