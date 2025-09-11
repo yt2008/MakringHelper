@@ -5,7 +5,6 @@
   <title>Assignment Marking Script</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { margin-bottom: 20px; }
     h2 { margin-top: 20px; }
     ul { list-style: none; padding-left: 0; }
     li { margin: 5px 0; }
@@ -16,6 +15,21 @@
       margin-top: 20px;
       min-height: 50px;
       white-space: pre-wrap;
+    }
+    .buttons {
+      margin-top: 10px;
+    }
+    button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
@@ -32,15 +46,18 @@
     <li><label><input type="checkbox" value="-3 unauthorized third-party library (except morgan)"> -3 unauthorized third-party library (except morgan)</label></li>
     <li><label><input type="checkbox" value="-3 package.json file missing"> -3 package.json file missing</label></li>
     <li><label><input type="checkbox" value="Late penalty applied according to rules"> Late penalty applied according to rules</label></li>
+    <br />
     <li><label><input type="checkbox" value="-10 app not running, partial marks only"> -10 app not running, partial marks only</label></li>
     <li><label><input type="checkbox" value="Major deduction for critical errors preventing testing"> Major deduction for critical errors preventing testing</label></li>
     <li><label><input type="checkbox" value="0 marks if only UI completed, backend missing"> 0 marks if only UI completed, backend missing</label></li>
   </ul>
 
   <!-- GitLab -->
-  <h2>GitLab (5 Marks, penalty only)</h2>
+  <h2>GitLab</h2>
   <ul>
-    <li><label><input type="checkbox" value="-5 GitLab commits missing before final submission"> -5 GitLab commits missing before final submission</label></li>
+    <li><label><input type="checkbox" value="-2 README file missing">-2 README file missing</label></li>
+    <li><label><input type="checkbox" value="-2 .gitignore file missing">-2 .gitignore file missing</label></li>
+    <li><label><input type="checkbox" value="-1 poor commit messages">-1 poor commit messages</label></li>
   </ul>
 
   <!-- Core Tasks -->
@@ -196,16 +213,20 @@
   <!-- Overall Comment -->
   <h2>Overall Comment</h2>
   <div id="overallComment"></div>
+  <div class="buttons">
+    <button onclick="copyComment()">Copy Comment</button>
+    <button onclick="clearAll()">Clear Selection</button>
+  </div>
 
   <script>
     function updateComment() {
       const commentBox = document.getElementById("overallComment");
       commentBox.innerHTML = ""; // reset
 
-      document.querySelectorAll("h2").forEach(h2 => {
-        const ul = h2.nextElementSibling;
-        if (ul && ul.tagName === "UL") {
-          const checkedItems = Array.from(ul.querySelectorAll("input[type=checkbox]:checked"));
+      document.querySelectorAll("h2").forEach((h2) => {
+        const nextUl = h2.nextElementSibling;
+        if (nextUl && nextUl.tagName === "UL") {
+          const checkedItems = Array.from(nextUl.querySelectorAll("input[type=checkbox]:checked"));
           if (checkedItems.length > 0) {
             commentBox.innerHTML += `<b>${h2.textContent}</b><br>`;
             checkedItems.forEach(cb => {
@@ -215,6 +236,23 @@
           }
         }
       });
+    }
+
+    function copyComment() {
+      const commentBox = document.getElementById("overallComment");
+      const text = commentBox.innerText;
+      if (!text.trim()) {
+        alert("No comment to copy!");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Comment copied to clipboard!");
+      });
+    }
+
+    function clearAll() {
+      document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+      document.getElementById("overallComment").innerHTML = "";
     }
 
     document.querySelectorAll("input[type=checkbox]").forEach(cb => {
