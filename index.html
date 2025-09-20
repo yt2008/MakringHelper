@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Lab Marking Script — Tasks 1-8</title>
+  <title>Lab Marking Script — Movie Theater System</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{--muted:#555;--accent:#0b61d6}
@@ -28,7 +28,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>Lab Marking Script — Tasks 1–8</h1>
+    <h1>Lab Marking Script — Movie Theater System (Tasks 1–8)</h1>
     <div class="note">Click the text to toggle a checkbox. Checked items are appended to the Overall Comment (grouped under their Task heading). Computed deduction and resulting score are shown below.</div>
 
     <!-- TASKS -->
@@ -38,72 +38,72 @@
       <ul>
         <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing required info in rendered template (system name, student name, student ID)"> -0.25: Missing required info in rendered template (system name, student name, student ID)</label></li>
         <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Template not rendered with res.render or route not responding with HTML."> -0.25: Template not rendered with res.render or route not responding with HTML.</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Hyperlinks to Books List, Add Book Form, Rentals List, and Add Rental Form are missing or broken."> -0.25: Hyperlinks to Books List, Add Book Form, Rentals List, and Add Rental Form are missing or broken.</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Hyperlinks to Movies List, Add Movie Form, Bookings List, and Add Booking Form are missing or broken."> -0.25: Hyperlinks to Movies List, Add Movie Form, Bookings List, and Add Booking Form are missing or broken.</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented."> 0: Endpoint not implemented.</label></li>
       </ul>
 
-      <h2>Task 2: Show Table 1 (Books list)</h2>
+      <h2>Task 2: Show Table 1 (Movies list)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Book list view not rendered with EJS directives to loop and display all books from MongoDB using the Book model"> -0.25: Book list view not rendered with EJS directives to loop and display all books from MongoDB using the Book model</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: HTML table missing or does not include required attributes per schema (bookTitle, bookAuthor, rentalPrice)"> -0.25: HTML table missing or does not include required attributes per schema (bookTitle, bookAuthor, rentalPrice)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not show book count in the page as specified in scenario notes"> -0.25: Does not show book count in the page as specified in scenario notes</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Movie list view not rendered with EJS directives to loop and display all movies from MongoDB using the Movie model"> -0.25: Movie list view not rendered with EJS directives to loop and display all movies from MongoDB using the Movie model</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: HTML table missing or does not include required attributes per schema (movieTitle, movieDirector, ticketPrice)"> -0.25: HTML table missing or does not include required attributes per schema (movieTitle, movieDirector, ticketPrice)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not show movie count in the page as specified in scenario notes"> -0.25: Does not show movie count in the page as specified in scenario notes</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented."> 0: Endpoint not implemented.</label></li>
       </ul>
 
       <h2>Task 3: Add Table 1 (GET)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form missing any required field input: bookTitle, bookAuthor, rentalPrice, with proper types (text, text, number) and submit button"> -0.25: Form missing any required field input: bookTitle, bookAuthor, rentalPrice, with proper types (text, text, number) and submit button</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form action not pointing to POST /studentFirstName/books/add or uses the wrong HTTP method"> -0.25: Form action not pointing to POST /studentFirstName/books/add or uses the wrong HTTP method</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form missing any required field input: movieTitle, movieDirector, ticketPrice, with proper types (text, text, number) and submit button"> -0.25: Form missing any required field input: movieTitle, movieDirector, ticketPrice, with proper types (text, text, number) and submit button</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form action not pointing to POST /studentFirstName/movies/add or uses the wrong HTTP method"> -0.25: Form action not pointing to POST /studentFirstName/movies/add or uses the wrong HTTP method</label></li>
         <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: View not rendered as HTML via res.render, or malformed/invalid inputs allowed for numeric field"> -0.25: View not rendered as HTML via res.render, or malformed/invalid inputs allowed for numeric field</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
       <h2>Task 4: Add Table 1 (POST)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: New Book document is not created with Mongoose and saved to MongoDB"> -0.5: New Book document is not created with Mongoose and saved to MongoDB</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (bookTitle, bookAuthor, rentalPrice)"> -0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (bookTitle, bookAuthor, rentalPrice)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: New Movie document is not created with Mongoose and saved to MongoDB"> -0.5: New Movie document is not created with Mongoose and saved to MongoDB</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (movieTitle, movieDirector, ticketPrice)"> -0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (movieTitle, movieDirector, ticketPrice)</label></li>
         <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing middleware to parse body, resulting in failed processing (only penalise here once)"> -0.25: Missing middleware to parse body, resulting in failed processing (only penalise here once)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Validation/type issues not handled (non-number for rentalPrice accepted or save attempted without required fields)"> -0.25: Validation/type issues not handled (non-number for rentalPrice accepted or save attempted without required fields)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not redirect to /studentFirstName/books after successful add"> -0.25: Does not redirect to /studentFirstName/books after successful add</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Validation/type issues not handled (non-number for ticketPrice accepted or save attempted without required fields)"> -0.25: Validation/type issues not handled (non-number for ticketPrice accepted or save attempted without required fields)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not redirect to /studentFirstName/movies after successful add"> -0.25: Does not redirect to /studentFirstName/movies after successful add</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
-      <h2>Task 5: Show Table 2 (Rentals list)</h2>
+      <h2>Task 5: Show Table 2 (Bookings list)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Rentals list view not rendered with EJS and does not use populate to show the related Book title for each rental"> -0.25: Rentals list view not rendered with EJS and does not use populate to show the related Book title for each rental</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: HTML table missing or does not include required attributes (customerName, rentalDays, totalCost, and populated book title)"> -0.25: HTML table missing or does not include required attributes (customerName, rentalDays, totalCost, and populated book title)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Fails to query rentals from MongoDB or returns a non-HTML response"> -0.25: Fails to query rentals from MongoDB or returns a non-HTML response</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Bookings list view not rendered with EJS and does not use populate to show the related Movie title for each booking"> -0.25: Bookings list view not rendered with EJS and does not use populate to show the related Movie title for each booking</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: HTML table missing or does not include required attributes (customerName, numberOfSeats, totalAmount, and populated movie title)"> -0.25: HTML table missing or does not include required attributes (customerName, numberOfSeats, totalAmount, and populated movie title)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Fails to query bookings from MongoDB or returns a non-HTML response"> -0.25: Fails to query bookings from MongoDB or returns a non-HTML response</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
       <h2>Task 6: Add Table 2 (GET)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form missing required inputs for customerName and rentalDays and a select/dropdown of available Books sourced from DB (bookId)"> -0.25: Form missing required inputs for customerName and rentalDays and a select/dropdown of available Books sourced from DB (bookId)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form action not pointing to POST /studentFirstName/rentals/add or wrong HTTP method"> -0.25: Form action not pointing to POST /studentFirstName/rentals/add or wrong HTTP method</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Dropdown not populated from live Book collection or value does not submit a valid ObjectId"> -0.25: Dropdown not populated from live Book collection or value does not submit a valid ObjectId</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form missing required inputs for customerName and numberOfSeats and a select/dropdown of available Movies sourced from DB (movieId)"> -0.25: Form missing required inputs for customerName and numberOfSeats and a select/dropdown of available Movies sourced from DB (movieId)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form action not pointing to POST /studentFirstName/bookings/add or wrong HTTP method"> -0.25: Form action not pointing to POST /studentFirstName/bookings/add or wrong HTTP method</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Dropdown not populated from live Movie collection or value does not submit a valid ObjectId"> -0.25: Dropdown not populated from live Movie collection or value does not submit a valid ObjectId</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
       <h2>Task 7: Add Table 2 (POST)</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: Rental document not created and saved to MongoDB with a valid bookId reference"> -0.5: Rental document not created and saved to MongoDB with a valid bookId reference</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (customerName, rentalDays..)"> -0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (customerName, rentalDays..)</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing or incorrect use of Mongoose types (e.g., rentalDays not cast to Number, invalid ObjectId) or failure to validate"> -0.25: Missing or incorrect use of Mongoose types (e.g., rentalDays not cast to Number, invalid ObjectId) or failure to validate</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not redirect to /studentFirstName/rentals after adding"> -0.25: Does not redirect to /studentFirstName/rentals after adding</label></li>
+        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: Booking document not created and saved to MongoDB with a valid movieId reference"> -0.5: Booking document not created and saved to MongoDB with a valid movieId reference</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (customerName, numberOfSeats)"> -0.25: Form data not correctly extracted from req.body or field names mismatch schema keys (customerName, numberOfSeats)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing or incorrect use of Mongoose types (e.g., numberOfSeats not cast to Number, invalid ObjectId) or failure to validate"> -0.25: Missing or incorrect use of Mongoose types (e.g., numberOfSeats not cast to Number, invalid ObjectId) or failure to validate</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not redirect to /studentFirstName/bookings after adding"> -0.25: Does not redirect to /studentFirstName/bookings after adding</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
       <h2>Shared rule for Labs 03,04,05,09</h2>
       <ul>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25 (Labs 03/04/05/09): totalCost not calculated server-side as rentalDays × selected Book.rentalPrice before save (must not come from the form)"> -0.25 (Labs 03/04/05/09): totalCost not calculated server-side as rentalDays × selected Book.rentalPrice before save (must not come from the form)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25 (Labs 03/04/05/09): totalAmount not calculated server-side as numberOfSeats × selected Movie.ticketPrice before save (must not come from the form)"> -0.25 (Labs 03/04/05/09): totalAmount not calculated server-side as numberOfSeats × selected Movie.ticketPrice before save (must not come from the form)</label></li>
       </ul>
 
       <h2>Task 8: Details (Params)</h2>
       <ul>
         <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Not using route param"> -0.25: Not using route param</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Book not fetched by param id using Mongoose"> -0.25: Book not fetched by param id using Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not also fetch and display all rentals for that book (using bookId) or fails to show them in an HTML table"> -0.25: Does not also fetch and display all rentals for that book (using bookId) or fails to show them in an HTML table</label></li>
-        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: EJS template not rendered or missing key fields for the Book and its Rentals; failure to use EJS directives to iterate data"> -0.25: EJS template not rendered or missing key fields for the Book and its Rentals; failure to use EJS directives to iterate data</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Movie not fetched by param id using Mongoose"> -0.25: Movie not fetched by param id using Mongoose</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not also fetch and display all bookings for that movie (using movieId) or fails to show them in an HTML table"> -0.25: Does not also fetch and display all bookings for that movie (using movieId) or fails to show them in an HTML table</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: EJS template not rendered or missing key fields for the Movie and its Bookings; failure to use EJS directives to iterate data"> -0.25: EJS template not rendered or missing key fields for the Movie and its Bookings; failure to use EJS directives to iterate data</label></li>
         <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
       </ul>
 
@@ -117,7 +117,7 @@
     <!-- output / controls -->
     <div class="stats">
       <div class="stat"><div class="muted">Computed deduction</div><div id="computedDed">0.00</div></div>
-      <div class="stat"><div class="muted">Score (out of 5)</div><div id="score" class="score">5.00</div></div>
+      <div class="stat"><div class="muted">Score (out of 100)</div><div id="score" class="score">100.00</div></div>
     </div>
 
     <h2 style="margin-top:14px">Overall Comment</h2>
@@ -134,7 +134,6 @@
   </div>
 
   <script>
-    // helper: parse float safely, default 0
     function parseDed(v) {
       const n = parseFloat(v);
       return isNaN(n) ? 0 : n;
@@ -144,95 +143,48 @@
       const computedEl = document.getElementById('computedDed');
       const scoreEl = document.getElementById('score');
       const commentEl = document.getElementById('overallComment');
+      commentEl.innerHTML = '';
 
-      commentEl.innerHTML = ''; // reset
-
-      // compute sum
       let sum = 0;
-      // iterate h2 sections
       const headings = Array.from(document.querySelectorAll('#tasks h2'));
       headings.forEach(h2 => {
         const next = h2.nextElementSibling;
         if (!next || next.tagName !== 'UL') return;
         const checked = Array.from(next.querySelectorAll('input[type="checkbox"]:checked'));
         if (checked.length === 0) return;
-        // append heading
+
         const titleNode = document.createElement('div');
         titleNode.innerHTML = '<strong>' + h2.textContent + '</strong>';
         commentEl.appendChild(titleNode);
 
-        // append each checked item text
         checked.forEach(cb => {
           const text = cb.dataset.text || cb.parentElement.textContent.trim();
           const lineNode = document.createElement('div');
-          // ensure leading dash if not present
           const display = (text.trim().startsWith('-') ? text.trim() : ('- ' + text.trim()));
           lineNode.textContent = display;
           commentEl.appendChild(lineNode);
-
-          // add deduction (data-ded attribute holds numeric deduction, might be negative or 0)
-          const ded = parseDed(cb.dataset.ded);
-          sum += ded;
+          sum += parseDed(cb.dataset.ded);
         });
-
-        // blank line after section
         commentEl.appendChild(document.createElement('br'));
       });
 
-      // computed deduction is sum (note: data-ded uses negative values for deductions, sum will be negative)
-      // We want "deduction marks" as positive number = -sum (if values negative). But some entries may be positive zero.
-      // Normalize: treat data-ded as negative or zero. We'll compute totalDeduction = -sum if sum <= 0 else sum.
-      let totalDeduction = 0;
-      if (sum === 0) {
-        totalDeduction = 0;
-      } else if (sum < 0) {
-        totalDeduction = -sum;
-      } else {
-        // if instructor used positive numbers, accept them as deduction
-        totalDeduction = sum;
-      }
-
-      // cap deduction at 5
-      if (totalDeduction > 5) totalDeduction = 5;
-
-      const finalScore = Math.max(0, 5 - totalDeduction);
-
-      computedEl.textContent = totalDeduction.toFixed(2);
-      scoreEl.textContent = finalScore.toFixed(2);
+      computedEl.textContent = sum.toFixed(2);
+      scoreEl.textContent = (100 + sum).toFixed(2); // sum is negative or zero
     }
 
-    // copy comment to clipboard
-    document.getElementById('copyBtn').addEventListener('click', async () => {
-      const txt = document.getElementById('overallComment').innerText.trim();
-      if (!txt) {
-        alert('No comment to copy.');
-        return;
-      }
-      try {
-        await navigator.clipboard.writeText(txt);
-        alert('Comment copied to clipboard.');
-      } catch (e) {
-        // fallback
-        const ta = document.createElement('textarea');
-        ta.value = txt;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-        alert('Comment copied to clipboard (fallback).');
-      }
+    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', update);
     });
 
-    // clear selections
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('overallComment').innerText;
+      navigator.clipboard.writeText(text).then(() => alert('Comment copied!'));
+    });
     document.getElementById('clearBtn').addEventListener('click', () => {
       document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.checked = false);
       update();
     });
 
-    // attach listeners: all labels wrap the checkbox so clicks toggle automatically.
-    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.addEventListener('change', update));
-
-    // init
     update();
   </script>
 </body>
