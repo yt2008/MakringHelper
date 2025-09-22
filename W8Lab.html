@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Lab Marking Script — Dish & Order API</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--muted:#555;--accent:#0b61d6}
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 18px; background:#f6f8fa; color:#111; }
+    .card { background:#fff; border-radius:10px; padding:18px; box-shadow:0 8px 30px rgba(15,30,50,0.06); max-width:1100px; margin:0 auto; }
+    h1 { margin:0 0 12px 0; font-size:20px; }
+    h2 { margin:18px 0 8px 0; font-size:16px; color:var(--accent); }
+    ul { list-style:none; padding-left:0; margin:0; }
+    li { margin:6px 0; }
+    label { cursor:pointer; display:inline-flex; align-items:center; gap:8px; user-select:none; }
+    input[type="checkbox"] { width:18px; height:18px; margin:0; }
+    #overallComment { border:1px solid #e6eef8; background:#fbfdff; padding:12px; min-height:120px; white-space:pre-wrap; border-radius:6px; margin-top:8px; }
+    .controls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    button { background:var(--accent); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    button.ghost { background:#e6eef8; color:var(--accent); border:1px solid #cfe0fb; }
+    .stats { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+    .stat { background:#fff; border:1px solid #eef3fb; padding:8px 10px; border-radius:8px; min-width:160px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .score { font-weight:700; font-size:18px; color:#0a7a0a; }
+    footer { margin-top:18px; font-size:13px; color:var(--muted); }
+    .note { font-size:13px; color:var(--muted); margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Lab Marking Script — Dish & Order API</h1>
+    <div class="note">Click the text to toggle a checkbox. Checked items are appended to the Overall Comment (grouped under their Task heading). Computed deduction and resulting score are shown below.</div>
+
+    <!-- TASKS -->
+    <section id="tasks">
+
+      <h2>Task 1: Get All Table 1 (Dishes)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Response is not JSON (res.json) or wrong Content-Type"> -0.25: Response is not JSON (res.json) or wrong Content-Type</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text='-0.25: Count missing or wrong shape (must be {"dishes":[...], "count":N})'> -0.25: Count missing or wrong shape (must be {"dishes":[...], "count":N})</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Not querying MongoDB with the Dish model / returns hardcoded data"> -0.25: Not querying MongoDB with the Dish model / returns hardcoded data</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Success status not 200 or returns non-array for dishes"> -0.25: Success status not 200 or returns non-array for dishes</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: if missing any attributes"> -0.25: if missing any attributes</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>Task 2: Create Table 1 (Dish)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: Dish not created/saved to MongoDB with Mongoose"> -0.5: Dish not created/saved to MongoDB with Mongoose</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Required fields missing/ignored or body keys don't match schema (dishName, dishType, dishPrice); body not parsed (missing JSON parser middleware)"> -0.25: Required fields missing/ignored or body keys don't match schema (dishName, dishType, dishPrice); body not parsed (missing JSON parser middleware)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not validate types (non-number accepted for dishPrice)"> -0.25: Does not validate types (non-number accepted for dishPrice)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text='-0.25: Wrong status code or response shape (should be 200 or 201 and include at least {"message":"", "dish":{}})'> -0.25: Wrong status code or response shape (should be 200 or 201 and include at least {"message":"", "dish":{}})</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Unhandled errors (no try/catch; duplicate/validation errors return 200)"> -0.25: Unhandled errors (no try/catch; duplicate/validation errors return 200)</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>Task 3: Update Table 1 (Dish)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not update existing document by :id (ignores param or creates new doc)"> -0.25: Does not update existing document by :id (ignores param or creates new doc)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Fails to keep _id immutable or doesn't restrict updates to provided fields"> -0.25: Fails to keep _id immutable or doesn't restrict updates to provided fields</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing {new:true, runValidators:true} (returns old doc or bypasses validation)"> -0.25: Missing {new:true, runValidators:true} (returns old doc or bypasses validation)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text='-0.25: Not-found not handled (should return 404), missing try…catch… e.g. {"error":"Dish not found"}'> -0.25: Not-found not handled (should return 404), missing try…catch… e.g. {"error":"Dish not found"}</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Wrong status code (should be 200) or not returning updated dish JSON"> -0.25: Wrong status code (should be 200) or not returning updated dish JSON</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>Task 4: Delete Table 1 (Dish by ID)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not delete by :id via Mongoose (no DB op or wrong model)"> -0.25: Does not delete by :id via Mongoose (no DB op or wrong model)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text='-0.25: Not-found not handled (should return 404 JSON {"error":"Dish not found"})'> -0.25: Not-found not handled (should return 404 JSON {"error":"Dish not found"})</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Wrong status code (should be 200) or no JSON success message"> -0.25: Wrong status code (should be 200) or no JSON success message</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Fails to validate/catch invalid ObjectId (server error instead of 400/404 JSON)"> -0.25: Fails to validate/catch invalid ObjectId (server error instead of 400/404 JSON)</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>Task 5: Get All Table 2 (Orders)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Response not JSON or wrong Content-Type"> -0.25: Response not JSON or wrong Content-Type</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Does not use .populate('dishId','dishName') (populated dish name missing)"> -0.25: Does not use .populate('dishId','dishName') (populated dish name missing)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Not querying MongoDB with the Order model / returns hardcoded data"> -0.25: Not querying MongoDB with the Order model / returns hardcoded data</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Wrong status code (should be 200) or malformed array/shape"> -0.25: Wrong status code (should be 200) or malformed array/shape</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>Task 6: Create Table 2 (Order)</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25 (Labs 2/3/7/8): totalCost not calculated server-side as quantity × Dish.dishPrice before save"> -0.25 (Labs 2/3/7/8): totalCost not calculated server-side as quantity × Dish.dishPrice before save</label></li>
+        <li><label><input type="checkbox" data-ded="-0.5" data-text="-0.5: Order not created/saved with valid dishId reference"> -0.5: Order not created/saved with valid dishId reference</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Fails to verify dishId exists (creates order with non-existent dish or invalid ObjectId)"> -0.25: Fails to verify dishId exists (creates order with non-existent dish or invalid ObjectId)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text="-0.25: Missing/invalid body parsing or schema key mismatches (customerName, quantity, dishId)"> -0.25: Missing/invalid body parsing or schema key mismatches (customerName, quantity, dishId)</label></li>
+        <li><label><input type="checkbox" data-ded="-0.25" data-text='-0.25: Wrong status code/shape (should be 200 or 201 and include {"order":{}}) or errors not handled as JSON'> -0.25: Wrong status code/shape (should be 200 or 201 and include {"order":{}}) or errors not handled as JSON</label></li>
+        <li><label><input type="checkbox" data-ded="0" data-text="0: Endpoint not implemented"> 0: Endpoint not implemented</label></li>
+      </ul>
+
+      <h2>General Deduction</h2>
+      <ul>
+        <li><label><input type="checkbox" data-ded="0" data-text="General deductions (manual judgement)"> General deductions (manual judgement)</label></li>
+      </ul>
+
+    </section>
+
+    <!-- output / controls -->
+    <div class="stats">
+      <div class="stat"><div class="muted">Computed deduction</div><div id="computedDed">0.00</div></div>
+      <div class="stat"><div class="muted">Score (out of 100)</div><div id="score" class="score">100.00</div></div>
+    </div>
+
+    <h2 style="margin-top:14px">Overall Comment</h2>
+    <div id="overallComment" aria-live="polite"></div>
+
+    <div class="controls">
+      <button id="copyBtn">Copy Comment</button>
+      <button id="clearBtn" class="ghost">Clear Selection</button>
+    </div>
+
+    <footer>
+      Tip: click any line's text to toggle the checkbox. Decimal deductions are summed; zero-value items are shown in comments but do not affect the score.
+    </footer>
+  </div>
+
+  <script>
+    function parseDed(v) {
+      const n = parseFloat(v);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function update() {
+      const computedEl = document.getElementById('computedDed');
+      const scoreEl = document.getElementById('score');
+      const commentEl = document.getElementById('overallComment');
+      commentEl.innerHTML = '';
+
+      let sum = 0;
+      const headings = Array.from(document.querySelectorAll('#tasks h2'));
+      headings.forEach(h2 => {
+        const next = h2.nextElementSibling;
+        if (!next || next.tagName !== 'UL') return;
+        const checked = Array.from(next.querySelectorAll('input[type="checkbox"]:checked'));
+        if (checked.length === 0) return;
+
+        const titleNode = document.createElement('div');
+        titleNode.innerHTML = '<strong>' + h2.textContent + '</strong>';
+        commentEl.appendChild(titleNode);
+
+        checked.forEach(cb => {
+          const text = cb.dataset.text || cb.parentElement.textContent.trim();
+          const lineNode = document.createElement('div');
+          const display = (text.trim().startsWith('-') ? text.trim() : ('- ' + text.trim()));
+          lineNode.textContent = display;
+          commentEl.appendChild(lineNode);
+          sum += parseDed(cb.dataset.ded);
+        });
+        commentEl.appendChild(document.createElement('br'));
+      });
+
+      computedEl.textContent = sum.toFixed(2);
+      scoreEl.textContent = (100 + sum).toFixed(2);
+    }
+
+    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', update);
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('overallComment').innerText;
+      navigator.clipboard.writeText(text).then(() => alert('Comment copied!'));
+    });
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.checked = false);
+      update();
+    });
+
+    update();
+  </script>
+</body>
+</html>
