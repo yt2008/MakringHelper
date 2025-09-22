@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Music Store Marking Helper</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-top: 20px; }
+    ul { list-style: none; padding-left: 0; }
+    li { margin: 5px 0; }
+    input[type="checkbox"] { margin-right: 8px; }
+    #overallComment {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      min-height: 50px;
+      white-space: pre-wrap;
+    }
+    .buttons { margin-top: 10px; }
+    button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    #scoreBox { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Music Store Marking Script</h1>
+
+  <div id="tasks">
+
+    <h2>Task 1: Get All Albums</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.25 Response not JSON or wrong Content-Type"> -0.25 Response not JSON or wrong Content-Type</label></li>
+      <li><label><input type="checkbox" value="-0.25 Count missing or wrong shape ({albums:[...], count:N})"> -0.25 Count missing or wrong shape ({albums:[...], count:N})</label></li>
+      <li><label><input type="checkbox" value="-0.25 Not querying MongoDB with Album model / returns hardcoded data"> -0.25 Not querying MongoDB with Album model / returns hardcoded data</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code (should be 200) or malformed array/shape"> -0.25 Wrong status code (should be 200) or malformed array/shape</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>Task 2: Create Album</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.5 Album not created/saved with Mongoose"> -0.5 Album not created/saved with Mongoose</label></li>
+      <li><label><input type="checkbox" value="-0.25 Required fields missing/ignored or body keys mismatch (albumTitle, artistName, albumPrice)"> -0.25 Required fields missing/ignored or body keys mismatch (albumTitle, artistName, albumPrice)</label></li>
+      <li><label><input type="checkbox" value="-0.25 Invalid type allowed (non-number for albumPrice)"> -0.25 Invalid type allowed (non-number for albumPrice)</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code or response shape (should be 200/201 and include {message, album})"> -0.25 Wrong status code or response shape (should be 200/201 and include {message, album})</label></li>
+      <li><label><input type="checkbox" value="-0.25 Unhandled errors (no try/catch)"> -0.25 Unhandled errors (no try/catch)</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>Task 3: Update Album</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.25 Does not update album by :id"> -0.25 Does not update album by :id</label></li>
+      <li><label><input type="checkbox" value="-0.25 Fails to keep _id immutable or doesn’t restrict updates"> -0.25 Fails to keep _id immutable or doesn’t restrict updates</label></li>
+      <li><label><input type="checkbox" value="-0.25 Missing {new:true, runValidators:true}"> -0.25 Missing {new:true, runValidators:true}</label></li>
+      <li><label><input type="checkbox" value="-0.25 Not-found not handled (should return 404 {error:'Album not found'})"> -0.25 Not-found not handled (should return 404 {error:'Album not found'})</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code (should be 200) or not returning updated album"> -0.25 Wrong status code (should be 200) or not returning updated album</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>Task 4: Delete Album</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.25 Does not delete by :id with Mongoose"> -0.25 Does not delete by :id with Mongoose</label></li>
+      <li><label><input type="checkbox" value="-0.25 Not-found not handled (should return 404 {error:'Album not found'})"> -0.25 Not-found not handled (should return 404 {error:'Album not found'})</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code on success (should be 200) or missing JSON success message"> -0.25 Wrong status code on success (should be 200) or missing JSON success message</label></li>
+      <li><label><input type="checkbox" value="-0.25 Fails to validate/catch invalid ObjectId"> -0.25 Fails to validate/catch invalid ObjectId</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>Task 5: Get All Purchases</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.25 Response not JSON or wrong Content-Type"> -0.25 Response not JSON or wrong Content-Type</label></li>
+      <li><label><input type="checkbox" value="-0.25 Does not use .populate('albumId','albumTitle')"> -0.25 Does not use .populate('albumId','albumTitle')</label></li>
+      <li><label><input type="checkbox" value="-0.25 Not querying MongoDB with Purchase model / returns hardcoded data"> -0.25 Not querying MongoDB with Purchase model / returns hardcoded data</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code (should be 200) or malformed array/shape"> -0.25 Wrong status code (should be 200) or malformed array/shape</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>Task 6: Create Purchase</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-0.25 totalCost not calculated server-side as quantity × Album.albumPrice"> -0.25 totalCost not calculated server-side as quantity × Album.albumPrice</label></li>
+      <li><label><input type="checkbox" value="-0.5 Purchase not created/saved with valid albumId reference"> -0.5 Purchase not created/saved with valid albumId reference</label></li>
+      <li><label><input type="checkbox" value="-0.25 Fails to verify albumId exists (creates purchase with non-existent album)"> -0.25 Fails to verify albumId exists (creates purchase with non-existent album)</label></li>
+      <li><label><input type="checkbox" value="-0.25 Missing/invalid body parsing or schema key mismatch (customerName, quantity, albumId)"> -0.25 Missing/invalid body parsing or schema key mismatch (customerName, quantity, albumId)</label></li>
+      <li><label><input type="checkbox" value="-0.25 Wrong status code or response shape (should be 200/201 and include {message, purchase})"> -0.25 Wrong status code or response shape (should be 200/201 and include {message, purchase})</label></li>
+      <li><label><input type="checkbox" value="-0.25 Errors not handled properly as JSON"> -0.25 Errors not handled properly as JSON</label></li>
+      <li><label><input type="checkbox" value="0 Endpoint not implemented"> 0 Endpoint not implemented</label></li>
+    </ul>
+
+    <h2>General Deduction</h2>
+    <ul>
+      <li><label><input type="checkbox" value="-2 Very bad appearance (no CSS, broken layout)"> -2 Very bad appearance (no CSS, broken layout)</label></li>
+      <li><label><input type="checkbox" value="-3 Using CDN instead of local static assets"> -3 Using CDN instead of local static assets</label></li>
+      <li><label><input type="checkbox" value="-3 node_modules not removed"> -3 node_modules not removed</label></li>
+      <li><label><input type="checkbox" value="-3 Unauthorized third-party library"> -3 Unauthorized third-party library</label></li>
+      <li><label><input type="checkbox" value="-3 package.json missing"> -3 package.json missing</label></li>
+    </ul>
+
+  </div>
+
+  <h2>Overall Comment</h2>
+  <div id="overallComment"></div>
+  <div class="buttons">
+    <button id="copyBtn">Copy Comment</button>
+    <button id="clearBtn">Clear Selection</button>
+  </div>
+
+  <div id="scoreBox">
+    <p>Computed Deductions: <span id="computed">0</span></p>
+    <p>Final Score (out of 100): <span id="score">100</span></p>
+  </div>
+
+  <script>
+    function update() {
+      const commentBox = document.getElementById("overallComment");
+      commentBox.innerHTML = "";
+
+      let sum = 0;
+      document.querySelectorAll("h2").forEach((h2) => {
+        const nextUl = h2.nextElementSibling;
+        if (nextUl && nextUl.tagName === "UL") {
+          const checked = Array.from(nextUl.querySelectorAll("input[type=checkbox]:checked"));
+          if (checked.length > 0) {
+            commentBox.innerHTML += "<b>" + h2.textContent + "</b><br>";
+            checked.forEach(cb => {
+              commentBox.innerHTML += cb.value + "<br>";
+              const num = parseFloat(cb.value);
+              if (!isNaN(num)) sum += num;
+            });
+            commentBox.innerHTML += "<br>";
+          }
+        }
+      });
+
+      document.getElementById("computed").textContent = sum.toFixed(2);
+      document.getElementById("score").textContent = (100 + sum).toFixed(2);
+    }
+
+    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', update);
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('overallComment').innerText;
+      navigator.clipboard.writeText(text).then(() => alert('Comment copied!'));
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.checked = false);
+      update();
+    });
+
+    update();
+  </script>
+</body>
+</html>
