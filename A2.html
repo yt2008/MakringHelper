@@ -2,365 +2,717 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Marking Helper — Full Rubric</title>
+  <title>Marking Helper — Dynamic Per-Section Notes</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    :root{--accent:#0b61d6;--muted:#556}
-    body{font-family:Inter,Segoe UI,Roboto,Arial; background:#f6f8fa; color:#111; padding:18px;}
-    .card{max-width:1200px;margin:0 auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 8px 30px rgba(15,30,50,.06);}
-    h1{margin:0 0 8px 0}
-    h2{margin:18px 0 8px;color:var(--accent)}
-    ul{list-style:none;padding-left:0;margin:0}
-    li{margin:6px 0}
-    label{display:flex;gap:10px;align-items:flex-start;cursor:pointer; user-select:none}
-    input[type="checkbox"]{margin-top:3px}
-    #overallComment{border:1px solid #e6eef8;background:#fbfdff;padding:12px;min-height:140px;border-radius:6px;white-space:pre-wrap}
-    .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-    button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    button.ghost{background:#fff;color:var(--accent);border:1px solid #cfe0fb}
-    .stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
-    .stat{background:#fff;border:1px solid #eef3fb;padding:8px 10px;border-radius:8px;min-width:200px}
-    .muted{color:var(--muted);font-size:13px}
-    .score{font-weight:700;font-size:18px;color:#0a7a0a}
-    textarea{width:100%;min-height:80px;border-radius:6px;padding:8px;border:1px solid #ddd}
-    .small{font-size:13px;color:var(--muted)}
-    .note{font-size:13px;color:#666;margin-top:6px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-    .section-block{padding:10px;border-radius:8px;border:1px solid #f0f4fb;background:#fff}
+    :root{--accent:#0b61d6;--muted:#556;--bg-light:#f6f8fa;--border-light:#f0f4fb;--text-primary:#111;--text-muted:#556;--success:#0a7a0a;}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg-light); color:var(--text-primary); padding:20px; line-height:1.5;}
+    .card{max-width:1200px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+    h1{margin:0 0 12px 0;font-size:2.2em;font-weight:600;}
+    h2{margin:20px 0 12px;color:var(--accent);font-size:1.4em;font-weight:600;}
+    ul{list-style:none;padding-left:0;margin:8px 0;}
+    li{margin:8px 0;padding:4px 0;}
+    label{display:flex;gap:12px;align-items:flex-start;cursor:pointer;user-select:none;padding:4px;border-radius:4px;transition:background-color 0.2s;}
+    label:hover{background-color:#f8f9fa;}
+    input[type="checkbox"]{margin-top:2px;width:16px;height:16px;}
+    .section-block{padding:16px;border-radius:10px;border:1px solid var(--border-light);background:#fff;margin-bottom:16px;position:relative;}
+    .section-block.has-notes{border-left:4px solid var(--accent);}
+    .notes{width:100%;min-height:100px;border-radius:8px;padding:12px;border:2px solid #e1e8ed;resize:vertical;margin-top:12px;font-family:inherit;transition:border-color 0.2s;font-size:14px;}
+    .notes:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11,97,214,0.1);}
+    .section-note-container{margin-top:16px;padding-top:12px;border-top:2px solid #f0f4f8;animation:fadeIn 0.3s ease-in-out;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    .created-note-label{font-size:14px;color:var(--text-muted);margin-bottom:8px;font-weight:500;display:flex;align-items:center;gap:8px;}
+    .created-note-label::before{content:"📝";font-size:16px;}
+    #overallComment{border:2px solid #e6eef8;background:#fbfdff;padding:16px;min-height:200px;border-radius:8px;white-space:pre-wrap;font-family:inherit;line-height:1.6;}
+    .controls{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+    button{background:var(--accent);color:#fff;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:background-color 0.2s;font-size:14px;}
+    button:hover{background:#0952bd;}
+    button.ghost{background:#fff;color:var(--accent);border:2px solid #cfe0fb;}
+    button.ghost:hover{background:#f8fbff;}
+    .stats{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;}
+    .stat{background:#fff;border:2px solid #eef3fb;padding:12px 16px;border-radius:8px;min-width:220px;}
+    .muted{color:var(--text-muted);font-size:13px;margin-bottom:4px;}
+    .score{font-weight:700;font-size:20px;color:var(--success);}
+    .small{font-size:13px;color:var(--text-muted);line-height:1.4;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
+    .meta-input{width:100%;padding:10px;border-radius:6px;border:2px solid #ddd;transition:border-color 0.2s;}
+    .meta-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11,97,214,0.1);}
+    footer{margin-top:24px;font-size:13px;color:var(--text-muted);text-align:center;padding:16px;background:#f8f9fa;border-radius:8px;}
+    .section-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;}
+    .hint{font-size:12px;color:#777;font-style:italic;}
+    .checkbox-count{font-size:12px;color:var(--text-muted);margin-left:auto;padding:2px 8px;background:#f0f4f8;border-radius:12px;}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Marking Helper — Full Rubric</h1>
-    <div class="note">All sections expanded. Click the line text to toggle a deduction. The Overall Comment is built automatically grouped by task. GitLab penalty is outside the 100 total and shown separately.</div>
+    <h1>✅ Marking Helper — Dynamic Per-Section Notes</h1>
+    <div class="small">Select checkboxes in any section to automatically generate a notes textarea for that section. All section notes will be concatenated into the final comment. GitLab penalty is calculated separately.</div>
 
-    <!-- Quick instructions / fields -->
-    <div class="grid" style="margin-top:12px">
+    <!-- Marker / Student / GitLab Info -->
+    <div class="grid" style="margin-top:20px;">
       <div class="section-block">
-        <div class="small"><strong>Your name (marker):</strong></div>
-        <input id="markerName" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px" placeholder="Enter your name...">
-        <div class="small" style="margin-top:8px"><strong>Student ID / name (from Moodle):</strong></div>
-        <input id="studentId" style="width:100%;padding:6px;border:1px solid #ddd;border-radius:6px" placeholder="e.g. z1234567 / First Last">
-        <div class="small" style="margin-top:8px">Use the Feedback box below to list any third-party libraries you penalise for (required when you tick 'third-party lib' deductions).</div>
+        <div class="small"><strong>👨‍🏫 Marker Information</strong></div>
+        <input id="markerName" class="meta-input" placeholder="Enter your name (optional)">
+        <div class="small" style="margin-top:12px"><strong>👨‍🎓 Student Information</strong></div>
+        <input id="studentId" class="meta-input" placeholder="Student ID or Name (e.g. z1234567 / John Doe)">
       </div>
-
       <div class="section-block">
-        <div class="small"><strong>GitLab penalty (outside 100)</strong></div>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-          <input id="gitlabPenalty" type="number" min="-8" max="0" step="0.5" value="0" style="width:100px;padding:6px;border:1px solid #ddd;border-radius:6px">
-          <div class="small">Enter negative value between -8 and 0 (e.g. -3). This is <em>outside</em> the 100 total.</div>
+        <div class="small"><strong>📊 GitLab Penalty (Outside 100 marks)</strong></div>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
+          <input id="gitlabPenalty" type="number" min="-8" max="0" step="0.5" value="0" style="width:120px;padding:10px;border-radius:6px;border:2px solid #ddd;">
+          <div class="small">Enter negative value between -8 and 0 (e.g. -3). This is calculated separately from the main 100 marks.</div>
         </div>
-        <div class="small" style="margin-top:12px">GitLab rule: Enter 0 if 8 or more non-trivial commits exist; penalise for missing non-trivial commits.</div>
+        <div class="small" style="margin-top:12px;padding:8px;background:#fef7e0;border-radius:6px;">💡 Tip: Record commit counts and reasoning in GitLab notes when applicable.</div>
       </div>
     </div>
 
-    <!-- Tasks -->
-    <section id="tasks" style="margin-top:16px">
+    <!-- Main Assessment Sections -->
+    <section id="tasks" style="margin-top:24px;">
 
-      <h2>General Deductions (out of 100)</h2>
-      <ul>
-        <li><label><input type="checkbox" class="student-id-miss" data-ded="-1.5" data-text="-1.5: Endpoint missing student name or ID (cap applies)"> -1.5: Endpoint missing student name or ID (cap: apply up to 5 times, max -7.5)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Very bad appearance (no CSS, broken layout)"> -2: Very bad appearance (no CSS, broken layout)</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: node_modules not removed"> -3: node_modules not removed</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: package.json missing (requires manual install)"> -3: package.json missing (requires manual install)</label></li>
-        <li><label><input type="checkbox" data-ded="-10" data-text="-10: App not running / critical errors preventing testing (use with caution)"> -10: App not running / critical errors preventing testing</label></li>
-      </ul>
+      <!-- General Deductions -->
+      <div class="section-block" data-section="General Deductions">
+        <div class="section-header">
+          <h2>❌ General Deductions (out of 100)</h2>
+          <div class="hint">Student-ID misses capped at 5 occurrences (max -7.5)</div>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" class="student-id-miss" data-ded="-1.5" data-text="-1.5: Endpoint missing student name or ID (cap applied)"> -1.5: Endpoint missing student name or ID (cap applied)</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Very poor appearance (no CSS, broken layout)"> -2: Very poor appearance (no CSS, broken layout)</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: node_modules directory not removed"> -3: node_modules directory not removed</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: package.json file missing"> -3: package.json file missing</label></li>
+          <li><label><input type="checkbox" data-ded="-10" data-text="-10: Application not running / critical errors preventing testing"> -10: Application not running / critical errors preventing testing</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> General Deductions</div>
+          <textarea class="notes section-note" placeholder="Selected issues and additional notes for General Deductions will appear here..." rows="6" ></textarea>
+        </div>
+      </div>
 
-      <h2>GitLab (8 marks outside)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="0" data-text="GitLab check performed - please record penalty in GitLab field"> GitLab check performed — record penalty in GitLab field above</label></li>
-      </ul>
+      <!-- GitLab -->
+      <div class="section-block" data-section="GitLab Assessment">
+        <div class="section-header">
+          <h2>🔧 GitLab Assessment (8 marks — outside 100)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="0" data-text="✅ GitLab repository reviewed — penalty recorded in GitLab field above"> ✅ GitLab repository reviewed — penalty recorded in GitLab field above</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> GitLab Assessment</div>
+          <textarea class="notes section-note" placeholder="GitLab review notes and commit analysis will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
-      <!-- Core Tasks -->
-      <h2>Task 1: MongoDB Database Setup and Schema Creation (10 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for using third-party lib not allowed (list libs in Feedback)"> -5: 50% penalty for using third-party lib not allowed (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-10" data-text="-10: No MongoDB integration / still using in-memory storage (full 0 for task)"> -10: No MongoDB integration / still using in-memory storage</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Mongoose not used for DB connection"> -3: Mongoose not used for DB connection</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Schema definitions missing or incomplete"> -2: Schema definitions missing or incomplete</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Validation rules not implemented in schemas"> -3: Validation rules not implemented in schemas</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Unique constraints not enforced where required"> -1: Unique constraints not enforced where required</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Required fields not marked as required (userId, email, password, etc.)"> -1: Required fields not marked as required</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Schema attributes/types do not match data model specs"> -1: Schema attributes/types do not match data model specs</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Poor DB connection handling (missing .catch, scattered logic)"> -1: Poor DB connection handling (missing .catch, scattered logic)</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Error handling for DB operations missing"> -1: Error handling for DB operations missing</label></li>
-      </ul>
+      <!-- Task 1 -->
+      <div class="section-block" data-section="Task 1: MongoDB DB Setup & Schemas">
+        <div class="section-header">
+          <h2>🗄️ Task 1: MongoDB Database Setup and Schema Creation (10 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for disallowed third-party libraries (specify libraries)"> -5: 50% penalty for disallowed third-party libraries (specify libraries)</label></li>
+          <li><label><input type="checkbox" data-ded="-10" data-text="-10: No MongoDB integration / still using in-memory storage"> -10: No MongoDB integration / still using in-memory storage</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Mongoose not used for database connection"> -3: Mongoose not used for database connection</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Schema definitions missing or incomplete"> -2: Schema definitions missing or incomplete</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Validation rules not implemented in schemas"> -3: Validation rules not implemented in schemas</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Unique constraints not enforced where required"> -1: Unique constraints not enforced where required</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Required fields not marked as required"> -1: Required fields not marked as required</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Schema attributes/types do not match model specifications"> -1: Schema attributes/types do not match model specifications</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Poor database connection handling (missing error handling, crashes if DB down)"> -1: Poor database connection handling (missing error handling, crashes if DB down)</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Error handling for database operations missing"> -1: Error handling for database operations missing</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 1: MongoDB DB Setup & Schemas</div>
+          <textarea class="notes section-note" placeholder="Selected MongoDB setup issues and additional notes will appear here..." rows="6" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 2: User Registration and Signup System (8 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for using disallowed third-party (list libs in Feedback)"> -4: 50% penalty for using disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-8" data-text="-8: Registration functionality completely missing (0 for task)"> -8: Registration functionality completely missing</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Registration form doesn't capture required fields (email,password,fullname,role,phone)"> -3: Registration form doesn't capture required fields</label></li>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: Validation rules not implemented (email, uniqueness, password complexity, role, phone)"> -4: Validation rules not implemented (email, uniqueness, password complexity, role, phone)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: User data not persisted in MongoDB using Mongoose"> -2: User data not persisted in MongoDB using Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Registration does not redirect to login after success"> -1: Registration does not redirect to login after success</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: No error message shown when registration fails (on same page)"> -1: No error message shown when registration fails (on same page)</label></li>
-      </ul>
+      <!-- Task 2 -->
+      <div class="section-block" data-section="Task 2: User Registration & Signup">
+        <div class="section-header">
+          <h2>👤 Task 2: User Registration and Signup System (8 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-8" data-text="-8: Registration functionality completely missing (0 for task)"> -8: Registration functionality completely missing</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Registration form missing required fields (email,password,fullname,role,phone)"> -3: Registration form missing required fields</label></li>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: Validation rules not implemented (email, uniqueness, password complexity, role, phone)"> -4: Validation rules not implemented (email, uniqueness, password complexity, role, phone)</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: User data not persisted with Mongoose"> -2: User data not persisted with Mongoose</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Registration does not redirect to login after success"> -1: Registration does not redirect to login after success</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: No error message shown when registration fails (on same page)"> -1: No error message shown when registration fails (on same page)</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 2: User Registration & Signup</div>
+          <textarea class="notes section-note" placeholder="Selected registration issues and additional notes will appear here..." rows="5" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 3: User Login and Authentication System (8 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs in Feedback)"> -4: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-8" data-text="-8: Login functionality completely missing"> -8: Login functionality completely missing</label></li>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: Authentication not working or poorly implemented (credentials not checked against MongoDB)"> -4: Authentication not working or poorly implemented</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Login form missing required fields (email,password)"> -2: Login form missing required fields</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Logout functionality missing"> -1: Logout functionality missing</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Error messages for invalid credentials missing or inadequate"> -1: Error messages for invalid credentials missing or inadequate</label></li>
-      </ul>
+      <!-- Task 3 -->
+      <div class="section-block" data-section="Task 3: User Login & Auth">
+        <div class="section-header">
+          <h2>🔐 Task 3: User Login and Authentication System (8 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-8" data-text="-8: Login functionality completely missing"> -8: Login functionality completely missing</label></li>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: Authentication not working or poorly implemented"> -4: Authentication not working or poorly implemented</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Login form missing required fields (email,password)"> -2: Login form missing required fields</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Logout functionality missing"> -1: Logout functionality missing</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Error messages for invalid credentials missing/inadequate"> -1: Error messages for invalid credentials missing/inadequate</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 3: User Login & Auth</div>
+          <textarea class="notes section-note" placeholder="Selected authentication issues and additional notes will appear here..." rows="5" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 4: Enhanced Homepage with Database Stats (8 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs in Feedback)"> -4: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-8" data-text="-8: Homepage completely missing or not enhanced"> -8: Homepage completely missing or not enhanced</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Database statistics (users,recipes,inventory) missing"> -3: Database statistics missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Logged-in user information not displayed"> -2: Logged-in user information not displayed</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Logout button/link missing"> -2: Logout button/link missing</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Navigation links broken or missing"> -1: Navigation links broken or missing</label></li>
-      </ul>
+      <!-- Task 4 -->
+      <div class="section-block" data-section="Task 4: Enhanced Homepage with DB Stats">
+        <div class="section-header">
+          <h2>🏠 Task 4: Enhanced Application Homepage with Database Stats (8 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-8" data-text="-8: Homepage completely missing or not enhanced"> -8: Homepage completely missing or not enhanced</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Database statistics (users,recipes,inventory) missing"> -3: Database statistics (users,recipes,inventory) missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Logged-in user information not displayed"> -2: Logged-in user information not displayed</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Logout button/link missing"> -2: Logout button/link missing</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Navigation links broken or missing"> -1: Navigation links broken or missing</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 4: Enhanced Homepage with DB Stats</div>
+          <textarea class="notes section-note" placeholder="Selected homepage issues and additional notes will appear here..." rows="5" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 5: Database-Integrated Recipe Creation (9 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4.5" data-text="-4.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -4.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-9" data-text="-9: Recipe creation not integrated with MongoDB (0 for task)"> -9: Recipe creation not integrated with MongoDB</label></li>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: Recipes not saved using Mongoose"> -4: Recipes not saved to DB using Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Missing server-side validation / format rules (IDs, unique constraints, enums etc.)"> -2: Missing server-side validation / format rules</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: userId not properly integrated with recipes"> -2: userId not properly integrated with recipes</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Redirect after successful creation missing or broken"> -1: Redirect after successful creation missing or broken</label></li>
-      </ul>
+      <!-- Task 5 -->
+      <div class="section-block" data-section="Task 5: Recipe Creation">
+        <div class="section-header">
+          <h2>📝 Task 5: Database-Integrated Recipe Creation (9 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4.5" data-text="-4.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-9" data-text="-9: Recipe creation not integrated with MongoDB (0 for task)"> -9: Recipe creation not integrated with MongoDB</label></li>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: Recipes not saved to DB using Mongoose"> -4: Recipes not saved to DB using Mongoose</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Missing server-side validation / format rules"> -2: Missing server-side validation / format rules</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: userId not properly integrated with recipes"> -2: userId not properly integrated with recipes</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Redirect after successful creation missing or broken"> -1: Redirect after successful creation missing or broken</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 5: Recipe Creation</div>
+          <textarea class="notes section-note" placeholder="Selected recipe creation issues and additional notes will appear here..." rows="5" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 6: MongoDB-Powered Recipe Display System (9 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4.5" data-text="-4.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -4.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-9" data-text="-9: Recipe display not using DB (0 for task)"> -9: Recipe display not using DB</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Recipes not retrieved from MongoDB using Mongoose"> -3: Recipes not retrieved from MongoDB using Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: EJS templating not used for dynamic display"> -4: EJS templating not used for dynamic display</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Recipe attributes not properly displayed"> -2: Recipe attributes not properly displayed</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: <=1 attributes missing"> -1: <=1 attributes missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: >1 attributes missing"> -2: >1 attributes missing</label></li>
-      </ul>
+      <!-- Task 6 -->
+      <div class="section-block" data-section="Task 6: Recipe Display">
+        <div class="section-header">
+          <h2>👁️ Task 6: MongoDB-Powered Recipe Display System (9 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4.5" data-text="-4.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-9" data-text="-9: Recipe display not using DB (0 for task)"> -9: Recipe display not using DB</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Recipes not retrieved from MongoDB using Mongoose"> -3: Recipes not retrieved from MongoDB using Mongoose</label></li>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: EJS templating not used for dynamic display"> -4: EJS templating not used for dynamic display</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Recipe attributes not properly displayed"> -2: Recipe attributes not properly displayed</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: <= 1 attributes missing"> -1: <= 1 attributes missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: > 1 attributes missing"> -2: > 1 attributes missing</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 6: Recipe Display</div>
+          <textarea class="notes section-note" placeholder="Selected recipe display issues and additional notes will appear here..." rows="5" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 7: Database-Integrated Recipe Deletion (8 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs in Feedback)"> -4: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-8" data-text="-8: Recipe deletion not integrated with DB (0 for task)"> -8: Recipe deletion not integrated with DB</label></li>
-        <li><label><input type="checkbox" data-ded="-4" data-text="-4: Deletion doesn't use Mongoose operations"> -4: Deletion doesn't use Mongoose operations</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Confirmation dialogs missing"> -2: Confirmation dialogs missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Error handling for non-existent recipes inadequate"> -2: Error handling for non-existent recipes inadequate</label></li>
-      </ul>
+      <!-- Task 7 -->
+      <div class="section-block" data-section="Task 7: Recipe Deletion">
+        <div class="section-header">
+          <h2>🗑️ Task 7: Database-Integrated Recipe Deletion (8 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: 50% penalty for disallowed third-party (list libs) — apply to this task"> -4: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-8" data-text="-8: Recipe deletion not integrated with DB (0 for task)"> -8: Recipe deletion not integrated with DB</label></li>
+          <li><label><input type="checkbox" data-ded="-4" data-text="-4: Deletion doesn't use Mongoose operations"> -4: Deletion doesn't use Mongoose operations</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Confirmation dialogs missing"> -2: Confirmation dialogs missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Error handling for non-existent recipes inadequate"> -2: Error handling for non-existent recipes inadequate</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 7: Recipe Deletion</div>
+          <textarea class="notes section-note" placeholder="Selected recipe deletion issues and additional notes will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 8: MongoDB Inventory Item Management (10 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for disallowed third-party (list libs in Feedback)"> -5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-10" data-text="-10: Inventory not integrated with MongoDB (0 for task)"> -10: Inventory not integrated with MongoDB</label></li>
-        <li><label><input type="checkbox" data-ded="-3" data-text="-3: Full CRUD not implemented with DB"> -3: Full CRUD not implemented with DB</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Expiration date tracking missing"> -2: Expiration date tracking missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Low-stock alerts missing"> -2: Low-stock alerts missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Inventory value calculations not working"> -2: Inventory value calculations not working</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: EJS templating not used for inventory display"> -2: EJS templating not used for inventory display</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation missing or inadequate (follow model rules)"> -1: Validation missing or inadequate</label></li>
-      </ul>
+      <!-- Task 8 -->
+      <div class="section-block" data-section="Task 8: Inventory Management">
+        <div class="section-header">
+          <h2>📦 Task 8: MongoDB Inventory Item Management (10 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-10" data-text="-10: Inventory not integrated with MongoDB (0 for task)"> -10: Inventory not integrated with MongoDB</label></li>
+          <li><label><input type="checkbox" data-ded="-3" data-text="-3: Full CRUD not implemented with DB"> -3: Full CRUD not implemented with DB</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Expiration date tracking missing"> -2: Expiration date tracking missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Low-stock alerts missing"> -2: Low-stock alerts missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Inventory value calculations not working"> -2: Inventory value calculations not working</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: EJS templating not used for inventory display"> -2: EJS templating not used for inventory display</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation missing or inadequate (follow model rules)"> -1: Validation missing or inadequate (follow model rules)</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 8: Inventory Management</div>
+          <textarea class="notes section-note" placeholder="Selected inventory management issues and additional notes will appear here..." rows="6" ></textarea>
+        </div>
+      </div>
 
-      <h2>Task 9: Recipe & Inventory Update/Edit Management (10 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for disallowed third-party (list libs in Feedback)"> -5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
+      <!-- Task 9 -->
+      <div class="section-block" data-section="Task 9: Recipe & Inventory Update/Edit">
+        <div class="section-header">
+          <h2>✏️ Task 9: Recipe & Inventory Update/Edit Management (10 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-5" data-text="-5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+        </ul>
 
-        <li style="margin-top:8px"><strong>A) Recipe Update/Edit (5 marks)</strong></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: UPDATE not implemented with Mongoose"> -2: UPDATE not implemented with Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Edit form missing or not pre-populated"> -2: Edit form missing or not pre-populated</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation for updates missing/inadequate"> -1: Validation for updates missing/inadequate</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Success/error handling and feedback messages missing"> -1: Success/error handling and feedback messages missing</label></li>
+        <div style="margin-top:8px"><strong>A) Recipe Update/Edit (5 marks)</strong></div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: UPDATE not implemented with Mongoose (recipe)"> -2: UPDATE not implemented with Mongoose (recipe)</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Edit form missing or not pre-populated (recipe)"> -2: Edit form missing or not pre-populated (recipe)</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation for updates missing/inadequate (recipe)"> -1: Validation for updates missing/inadequate (recipe)</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Success/error handling and feedback messages missing (recipe)"> -1: Success/error handling and feedback messages missing (recipe)</label></li>
+        </ul>
 
-        <li style="margin-top:8px"><strong>B) Inventory Update/Edit (5 marks)</strong></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: UPDATE not implemented with Mongoose"> -2: UPDATE not implemented with Mongoose</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Edit form missing or not pre-populated"> -2: Edit form missing or not pre-populated</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation for updates missing/inadequate"> -1: Validation for updates missing/inadequate</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Success/error handling and feedback messages missing"> -1: Success/error handling and feedback messages missing</label></li>
-      </ul>
+        <div style="margin-top:8px"><strong>B) Inventory Update/Edit (5 marks)</strong></div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: UPDATE not implemented with Mongoose (inventory)"> -2: UPDATE not implemented with Mongoose (inventory)</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Edit form missing or not pre-populated (inventory)"> -2: Edit form missing or not pre-populated (inventory)</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Validation for updates missing/inadequate (inventory)"> -1: Validation for updates missing/inadequate (inventory)</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Success/error handling and feedback messages missing (inventory)"> -1: Success/error handling and feedback messages missing (inventory)</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> Task 9: Recipe & Inventory Update/Edit</div>
+          <textarea class="notes section-note" placeholder="Selected update/edit issues and additional notes will appear here..." rows="6" ></textarea>
+        </div>
+      </div>
 
       <!-- HD Tasks -->
-      <h2>HD Task 1: Advanced MongoDB Queries & Aggregation (5 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -2.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Aggregation pipelines missing or poorly implemented"> -2: Aggregation pipelines missing or poorly implemented</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Recipe recommendations based on inventory missing"> -2: Recipe recommendations based on inventory missing</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Cross-collection data analysis not working"> -1: Cross-collection data analysis not working</label></li>
-      </ul>
+      <div class="section-block" data-section="HD Task 1">
+        <div class="section-header">
+          <h2>🎖️ HD Task 1: Advanced MongoDB Queries & Aggregation (5 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -2.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Aggregation pipelines missing or poorly implemented"> -2: Aggregation pipelines missing or poorly implemented</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Recipe recommendations based on inventory missing"> -2: Recipe recommendations based on inventory missing</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Cross-collection data analysis not working"> -1: Cross-collection data analysis not working</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> HD Task 1</div>
+          <textarea class="notes section-note" placeholder="Selected advanced MongoDB issues and additional notes will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
-      <h2>HD Task 2: Role-Based Data Ownership & Multi-User (5 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -2.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Chef-only recipe access not enforced"> -2: Chef-only recipe access not enforced</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: User-data relationships not properly implemented"> -2: User-data relationships not properly implemented</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Role-specific dashboards missing or inadequate"> -1: Role-specific dashboards missing or inadequate</label></li>
-      </ul>
+      <div class="section-block" data-section="HD Task 2">
+        <div class="section-header">
+          <h2>🎖️ HD Task 2: Role-Based Data Ownership & Multi-User (5 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -2.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Chef-only recipe access not enforced"> -2: Chef-only recipe access not enforced</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: User-data relationships not properly implemented"> -2: User-data relationships not properly implemented</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Role-specific dashboards missing or inadequate"> -1: Role-specific dashboards missing or inadequate</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> HD Task 2</div>
+          <textarea class="notes section-note" placeholder="Selected role-based access issues and additional notes will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
-      <h2>HD Task 3: Advanced Analytics & Reporting (5 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -2.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Analytics dashboards missing or poorly implemented"> -2: Analytics dashboards missing or poorly implemented</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Aggregation-based reporting not working"> -2: Aggregation-based reporting not working</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Filtering systems or recommendation engines missing"> -1: Filtering systems or recommendation engines missing</label></li>
-      </ul>
+      <div class="section-block" data-section="HD Task 3">
+        <div class="section-header">
+          <h2>🎖️ HD Task 3: Advanced Analytics & Reporting (5 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -2.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Analytics dashboards missing or poorly implemented"> -2: Analytics dashboards missing or poorly implemented</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Aggregation-based reporting not working"> -2: Aggregation-based reporting not working</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Filtering systems or recommendation engines missing"> -1: Filtering systems or recommendation engines missing</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> HD Task 3</div>
+          <textarea class="notes section-note" placeholder="Selected analytics issues and additional notes will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
-      <h2>HD Task 4: Smart Inventory & Cost Optimisation (5 marks)</h2>
-      <ul>
-        <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs in Feedback)"> -2.5: 50% penalty for disallowed third-party (list libs in Feedback)</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Waste prediction or cost analysis missing"> -2: Waste prediction or cost analysis missing</label></li>
-        <li><label><input type="checkbox" data-ded="-2" data-text="-2: Shopping list generation / optimisation missing"> -2: Shopping list generation / optimisation missing</label></li>
-        <li><label><input type="checkbox" data-ded="-1" data-text="-1: Predictive analytics not working properly"> -1: Predictive analytics not working properly</label></li>
-      </ul>
+      <div class="section-block" data-section="HD Task 4">
+        <div class="section-header">
+          <h2>🎖️ HD Task 4: Smart Inventory & Cost Optimisation (5 marks)</h2>
+        </div>
+        <ul>
+          <li><label><input type="checkbox" data-ded="-2.5" data-text="-2.5: 50% penalty for disallowed third-party (list libs) — apply to this task"> -2.5: 50% penalty for disallowed third-party (list libs) — apply to this task</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Waste prediction or cost analysis missing"> -2: Waste prediction or cost analysis missing</label></li>
+          <li><label><input type="checkbox" data-ded="-2" data-text="-2: Shopping list generation / optimisation missing"> -2: Shopping list generation / optimisation missing</label></li>
+          <li><label><input type="checkbox" data-ded="-1" data-text="-1: Predictive analytics not working properly"> -1: Predictive analytics not working properly</label></li>
+        </ul>
+        <div class="section-note-container">
+          <div class="created-note-label"> HD Task 4</div>
+          <textarea class="notes section-note" placeholder="Selected smart inventory issues and additional notes will appear here..." rows="4" ></textarea>
+        </div>
+      </div>
 
     </section>
 
-    <!-- Feedback area -->
-    <h2>Feedback / Notes (required if penalising for third-party libs)</h2>
-    <textarea id="feedback" placeholder="Enter feedback, list third-party libraries used when you ticked 3rd-party deductions, and any other notes you want to include..."></textarea>
-    <div class="small" style="margin-top:8px">Document which task, how many marks deducted, and why. E.g. "Task 2: -4 (used passport.js — not covered in lab)".</div>
-
-    <!-- Output and controls -->
-    <div class="stats" style="margin-top:14px">
-      <div class="stat"><div class="muted">Computed deduction (from 100)</div><div id="computedDed">0.00</div></div>
-      <div class="stat"><div class="muted">Final score (out of 100)</div><div id="score" class="score">100.00</div></div>
-      <div class="stat"><div class="muted">GitLab penalty (outside 100)</div><div id="gitlabShown">0.00</div></div>
+    <!-- Global Feedback Section -->
+    <div style="margin-top:20px" class="section-block">
+      <h2>💬 General Feedback</h2>
+      <textarea id="globalFeedback" class="notes" placeholder="Enter overall feedback and summary comments for the student. This will be appended at the end of the final comment."></textarea>
     </div>
 
-    <h2 style="margin-top:14px">Overall Comment</h2>
+    <!-- Statistics Display -->
+    <div class="stats">
+      <div class="stat">
+        <div class="muted">Computed Deduction (from 100)</div>
+        <div id="computedDed" style="font-size:18px;font-weight:600;color:#d73a49;">0.00</div>
+      </div>
+      <div class="stat">
+        <div class="muted">Final Score (out of 100)</div>
+        <div id="score" class="score">100.00</div>
+      </div>
+      <div class="stat">
+        <div class="muted">GitLab Penalty (outside 100)</div>
+        <div id="gitlabShown" style="font-size:18px;font-weight:600;color:#e36209;">0.00</div>
+      </div>
+    </div>
+
+    <!-- Overall Comment Output -->
+    <h2 style="margin-top:24px">📄 Overall Comment</h2>
     <div id="overallComment" aria-live="polite"></div>
 
-    <div class="controls" style="margin-top:12px">
-      <button id="copyBtn">Copy Comment</button>
-      <button id="clearBtn" class="ghost">Clear Selection</button>
-      <button id="exportBtn" class="ghost">Export feedback (.txt)</button>
+    <!-- Action Buttons -->
+    <div class="controls">
+      <button id="concatBtn">🔗 Concatenate All Section Comments</button>
+      <button id="copyBtn">📋 Copy Comment</button>
+      <button id="exportBtn" class="ghost">💾 Export Feedback (.txt)</button>
+      <button id="clearBtn" class="ghost">🗑️ Clear All</button>
     </div>
 
-    <div class="note" style="margin-top:12px">Note: GitLab penalty is an external/extra 8-mark bucket and does not subtract from the 100 shown above. Use the Feedback box to record third-party libraries and the reasoning for deductions.</div>
+    <!-- Footer -->
+    <footer>
+      <strong>💡 How to use:</strong> Select checkboxes in any section to automatically create a notes textarea for that section. Fill in specific notes as needed. When ready, copy or export the consolidated feedback. All section notes will be concatenated into the final comment.
+    </footer>
   </div>
 
 <script>
-  // Utility
-  function parseDed(v){ const n = parseFloat(v); return isNaN(n)?0:n; }
-
-  // Update function
-  function update() {
-    const commentBox = document.getElementById('overallComment');
-    commentBox.innerHTML = '';
-
-    const allChecks = Array.from(document.querySelectorAll('#tasks input[type="checkbox"]'));
-    // compute student-id misses specially (class student-id-miss)
-    const sidChecks = allChecks.filter(cb=>cb.classList.contains('student-id-miss'));
-    const sidCheckedCount = sidChecks.filter(cb=>cb.checked).length;
-    const sidDedPer = -1.5;
-    const sidCapCount = 5;
-    const sidTotalDed = Math.max(sidCheckedCount,0)>0 ? Math.max(sidDedPer * Math.min(sidCheckedCount,sidCapCount), sidDedPer*0) : 0; // negative or 0
-
-    // Sum all other deductions except student-id-miss
-    let sum = 0;
-    allChecks.forEach(cb=>{
-      if(cb.classList.contains('student-id-miss')) return;
-      if(cb.checked) sum += parseDed(cb.dataset.ded || cb.value || 0);
-    });
-    // Add student id deduction (capped)
-    sum += sidTotalDed;
-
-    // Build grouped comments by heading
-    const headings = Array.from(document.querySelectorAll('#tasks h2'));
-    headings.forEach(h2 => {
-      const next = h2.nextElementSibling;
-      if(!next || next.tagName !== 'UL') return;
-      const checked = Array.from(next.querySelectorAll('input[type="checkbox"]:checked'));
-      // Filter out student-id-miss if we want to show each individually still — show them individually but note cap.
-      if(checked.length === 0) return;
-      // Show heading
-      const h = document.createElement('div');
-      h.innerHTML = '<strong>' + h2.textContent + '</strong>';
-      commentBox.appendChild(h);
-      checked.forEach(cb=>{
-        const txt = cb.dataset.text || cb.value || cb.parentElement.textContent.trim();
-        const line = document.createElement('div');
-        line.textContent = (txt.trim().startsWith('-')? txt.trim() : '- ' + txt.trim());
-        commentBox.appendChild(line);
-      });
-      commentBox.appendChild(document.createElement('br'));
-    });
-
-    // If any student-id misses exist, add summary (capped)
-    if(sidCheckedCount>0){
-      const sidNote = document.createElement('div');
-      const appliedCount = Math.min(sidCheckedCount, 5);
-      sidNote.innerHTML = `<em>Student-ID misses applied: ${sidCheckedCount} checked, ${appliedCount} counted for deduction (cap 5) → ${Math.abs(sidTotalDed).toFixed(2)} marks</em>`;
-      commentBox.appendChild(sidNote);
-      commentBox.appendChild(document.createElement('br'));
-    }
-
-    // Show feedback if present
-    const fb = document.getElementById('feedback').value.trim();
-    if(fb){
-      const fbH = document.createElement('div');
-      fbH.innerHTML = '<strong>Marker feedback / notes</strong>';
-      commentBox.appendChild(fbH);
-      const fbText = document.createElement('div');
-      fbText.textContent = fb;
-      commentBox.appendChild(fbText);
-    }
-
-    // Update computed and score
-    const computedEl = document.getElementById('computedDed');
-    const totalDed = sum; // sum is negative or 0
-    const deductionPositive = totalDed <= 0 ? -totalDed : totalDed; // show positive deduction
-    computedEl.textContent = (deductionPositive).toFixed(2);
-
-    let final = 100 + totalDed; // since totalDed is negative (deduction)
-    if(final < 0) final = 0;
-    if(final > 100) final = 100;
-    document.getElementById('score').textContent = final.toFixed(2);
-
-    // show GitLab penalty display
-    const gitVal = parseFloat(document.getElementById('gitlabPenalty').value) || 0;
-    document.getElementById('gitlabShown').textContent = gitVal.toFixed(2);
+  // Utility functions
+  function parseDed(v) { 
+    const n = parseFloat(v); 
+    return isNaN(n) ? 0 : n; 
   }
 
-  // Event attachments
-  document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.addEventListener('change', update));
-  document.getElementById('feedback').addEventListener('input', update);
-  document.getElementById('gitlabPenalty').addEventListener('input', update);
-  document.getElementById('studentId').addEventListener('input', update);
-  document.getElementById('markerName').addEventListener('input', update);
+  // Update section textarea with checked items
+  function updateSectionNotes(section) {
+    const textarea = section.querySelector('.section-note');
+    if (!textarea) return;
 
-  // Copy comment
-  document.getElementById('copyBtn').addEventListener('click', async ()=>{
-    const text = document.getElementById('overallComment').innerText.trim();
-    if(!text) { alert('No comment to copy'); return; }
-    try{ await navigator.clipboard.writeText(text); alert('Comment copied to clipboard'); } catch(e){
-      alert('Copy failed: ' + e);
+    const checkboxes = Array.from(section.querySelectorAll('input[type="checkbox"]'));
+    const checkedItems = checkboxes
+      .filter(cb => cb.checked)
+      .map(cb => cb.dataset.text || cb.parentElement.textContent.trim())
+      .map(text => text.trim().startsWith('-') ? text.trim() : `• ${text.trim()}`);
+
+    // Update the textarea content
+    textarea.value = checkedItems.length > 0 ? checkedItems.join('\n') : '';
+
+    // Update visual state
+    const hasChecked = checkedItems.length > 0;
+    section.classList.toggle('has-notes', hasChecked);
+
+    // Update checkbox counter
+    let counter = section.querySelector('.checkbox-count');
+    if (!counter && hasChecked) {
+      counter = document.createElement('span');
+      counter.className = 'checkbox-count';
+      const header = section.querySelector('.section-header');
+      if (header) header.appendChild(counter);
     }
+    
+    if (counter) {
+      counter.textContent = hasChecked ? `${checkedItems.length} selected` : '';
+      counter.style.display = hasChecked ? 'inline-block' : 'none';
+    }
+  }
+
+  // Main function to update the overall comment
+  function updateOverallComment() {
+    const overall = document.getElementById('overallComment');
+    overall.innerHTML = '';
+
+    const sections = Array.from(document.querySelectorAll('#tasks .section-block'));
+    const allChecks = Array.from(document.querySelectorAll('#tasks input[type="checkbox"]'));
+
+    // Handle Student-ID misses with cap
+    const sidChecks = allChecks.filter(cb => cb.classList.contains('student-id-miss'));
+    const sidCheckedCount = sidChecks.filter(cb => cb.checked).length;
+    const sidDedPer = -1.5;
+    const sidCapCount = 5;
+    const sidAppliedCount = Math.min(sidCheckedCount, sidCapCount);
+    const sidTotalDed = sidAppliedCount * sidDedPer;
+
+    // Calculate total deductions (excluding student-ID misses)
+    let totalDeductions = 0;
+    allChecks.forEach(cb => {
+      if (cb.classList.contains('student-id-miss')) return;
+      if (cb.checked) totalDeductions += parseDed(cb.dataset.ded || 0);
+    });
+    totalDeductions += sidTotalDed;
+
+    // Generate section-by-section feedback
+    sections.forEach(section => {
+      const heading = section.dataset.section || 
+        (section.querySelector('h2') ? section.querySelector('h2').textContent.trim() : 'Section');
+      const ul = section.querySelector('ul');
+      const checkedBoxes = ul ? Array.from(ul.querySelectorAll('input[type="checkbox"]:checked')) : [];
+      
+      if (checkedBoxes.length === 0) return;
+
+      // Add section heading
+      const sectionHeading = document.createElement('div');
+      sectionHeading.innerHTML = `<strong>${heading}</strong>`;
+      sectionHeading.style.marginTop = '12px';
+      sectionHeading.style.marginBottom = '8px';
+      overall.appendChild(sectionHeading);
+
+      // Add checked items
+      checkedBoxes.forEach(cb => {
+        const text = cb.dataset.text || cb.parentElement.textContent.trim();
+        const line = document.createElement('div');
+        line.textContent = text.trim().startsWith('-') ? text.trim() : `• ${text.trim()}`;
+        line.style.marginLeft = '16px';
+        line.style.marginBottom = '4px';
+        overall.appendChild(line);
+      });
+
+      overall.appendChild(document.createElement('br'));
+    });
+
+    // Add Student-ID summary if applicable
+    if (sidCheckedCount > 0) {
+      const sidSummary = document.createElement('div');
+      sidSummary.innerHTML = `<em><strong>Student-ID Missing Summary:</strong> ${sidCheckedCount} instances found, ${sidAppliedCount} counted (capped at ${sidCapCount}) → ${Math.abs(sidTotalDed).toFixed(1)} marks deducted</em>`;
+      sidSummary.style.marginTop = '8px';
+      sidSummary.style.padding = '8px';
+      sidSummary.style.background = '#fff3cd';
+      sidSummary.style.borderRadius = '4px';
+      overall.appendChild(sidSummary);
+      overall.appendChild(document.createElement('br'));
+    }
+
+    // Add global feedback if provided
+    const globalFeedback = document.getElementById('globalFeedback').value.trim();
+    if (globalFeedback) {
+      const feedbackHeading = document.createElement('div');
+      feedbackHeading.innerHTML = '<strong>� General Feedback</strong>';
+      feedbackHeading.style.marginTop = '12px';
+      feedbackHeading.style.marginBottom = '8px';
+      overall.appendChild(feedbackHeading);
+
+      const feedbackText = document.createElement('div');
+      feedbackText.textContent = globalFeedback;
+      feedbackText.style.lineHeight = '1.5';
+      overall.appendChild(feedbackText);
+    }
+
+    // Update statistics
+    updateStatistics(totalDeductions);
+  }
+
+  // Function to update only statistics (no overall comment generation)
+  function updateStatisticsOnly() {
+    const allChecks = Array.from(document.querySelectorAll('#tasks input[type="checkbox"]'));
+
+    // Handle Student-ID misses with cap
+    const sidChecks = allChecks.filter(cb => cb.classList.contains('student-id-miss'));
+    const sidCheckedCount = sidChecks.filter(cb => cb.checked).length;
+    const sidDedPer = -1.5;
+    const sidCapCount = 5;
+    const sidAppliedCount = Math.min(sidCheckedCount, sidCapCount);
+    const sidTotalDed = sidAppliedCount * sidDedPer;
+
+    // Calculate total deductions (excluding student-ID misses)
+    let totalDeductions = 0;
+    allChecks.forEach(cb => {
+      if (cb.classList.contains('student-id-miss')) return;
+      if (cb.checked) totalDeductions += parseDed(cb.dataset.ded || 0);
+    });
+    totalDeductions += sidTotalDed;
+
+    // Update statistics only
+    updateStatistics(totalDeductions);
+  }
+
+  // Function to concatenate all section comments
+  function concatenateAllSectionComments() {
+    const overallComment = document.getElementById('overallComment');
+    const sectionTextareas = Array.from(document.querySelectorAll('.section-note'));
+    
+    console.log('Found', sectionTextareas.length, 'section textareas'); // Debug log
+    
+    let concatenatedContent = [];
+    
+    sectionTextareas.forEach((textarea, index) => {
+      const content = textarea.value.trim();
+      console.log(`Section ${index + 1} content:`, content); // Debug log
+      
+      if (content) {
+        const sectionBlock = textarea.closest('.section-block');
+        const sectionName = sectionBlock ? 
+          (sectionBlock.dataset.section || 
+           (sectionBlock.querySelector('h2') ? sectionBlock.querySelector('h2').textContent.trim() : 'Section')) 
+          : 'Section';
+        
+        console.log(`Adding section: ${sectionName}`); // Debug log
+        concatenatedContent.push(`${sectionName}:`);
+        concatenatedContent.push(content);
+        concatenatedContent.push(''); // Add empty line between sections
+      }
+    });
+    
+    console.log('Total sections with content:', concatenatedContent.length / 3); // Debug log
+    
+    if (concatenatedContent.length > 0) {
+      // Clear the overall comment and add the concatenated content
+      overallComment.innerHTML = '';
+      
+      // Add heading
+      const heading = document.createElement('div');
+      heading.style.marginBottom = '16px';
+      heading.style.fontSize = '18px';
+      overallComment.appendChild(heading);
+      
+      // Add concatenated content
+      const contentDiv = document.createElement('div');
+      contentDiv.style.whiteSpace = 'pre-line';
+      contentDiv.style.lineHeight = '1.6';
+      contentDiv.textContent = concatenatedContent.join('\n');
+      overallComment.appendChild(contentDiv);
+      
+      console.log('Successfully concatenated content'); // Debug log
+    } else {
+      console.log('No content found to concatenate'); // Debug log
+      alert('❌ No section comments found to concatenate. Please select some checkboxes first.');
+    }
+  }
+
+  function updateStatistics(totalDeductions) {
+    const computedEl = document.getElementById('computedDed');
+    const deductionPositive = totalDeductions <= 0 ? -totalDeductions : totalDeductions;
+    computedEl.textContent = deductionPositive.toFixed(2);
+
+    let finalScore = 100 + totalDeductions;
+    finalScore = Math.max(0, Math.min(100, finalScore));
+    document.getElementById('score').textContent = finalScore.toFixed(2);
+
+    const gitlabPenalty = parseFloat(document.getElementById('gitlabPenalty').value) || 0;
+    document.getElementById('gitlabShown').textContent = gitlabPenalty.toFixed(2);
+  }
+
+  // Initialize event listeners
+  function initializeEventListeners() {
+    // Checkbox change handlers - update section notes and statistics only
+    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const section = e.target.closest('.section-block');
+        if (section) {
+          updateSectionNotes(section);
+        }
+        updateStatisticsOnly();
+      });
+    });
+
+    // Input field listeners - only update statistics
+    document.getElementById('gitlabPenalty').addEventListener('input', updateStatisticsOnly);
+    document.getElementById('markerName').addEventListener('input', updateStatisticsOnly);
+    document.getElementById('studentId').addEventListener('input', updateStatisticsOnly);
+
+    // Concatenate all section comments button
+    document.getElementById('concatBtn').addEventListener('click', concatenateAllSectionComments);
+
+    // Copy button handler
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const text = document.getElementById('overallComment').innerText.trim();
+      if (!text) {
+        alert('❌ No comment to copy');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('✅ Comment copied to clipboard!');
+      } catch (e) {
+        alert('❌ Copy failed: ' + e.message);
+      }
+    });
+
+    // Export button handler
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const marker = document.getElementById('markerName').value.trim();
+      const student = document.getElementById('studentId').value.trim();
+      const gitlabPenalty = document.getElementById('gitlabPenalty').value.trim();
+      
+      const header = `Marker: ${marker || 'Not specified'}\nStudent: ${student || 'Not specified'}\nGitLab Penalty (outside 100): ${gitlabPenalty}\n\n`;
+      const stats = `Computed Deduction (from 100): ${document.getElementById('computedDed').textContent}\nFinal Score (out of 100): ${document.getElementById('score').textContent}\n\n`;
+      const comment = 'Overall Comment:\n' + (document.getElementById('overallComment').innerText || 'No feedback provided') + '\n';
+      
+      const content = header + stats + comment;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const safeStudent = student ? student.replace(/\s+/g, '_').replace(/[^\w\-]/g, '') : 'student';
+      link.download = `feedback_${safeStudent}_${new Date().toISOString().slice(0, 10)}.txt`;
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // Clear button handler
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (!confirm('🗑️ Are you sure you want to clear all selections and notes? This action cannot be undone.')) {
+        return;
+      }
+      
+      // Clear all checkboxes
+      document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.checked = false);
+      
+      // Clear all section textareas
+      document.querySelectorAll('.section-note').forEach(textarea => textarea.value = '');
+      
+      // Clear text inputs
+      document.getElementById('globalFeedback').value = '';
+      document.getElementById('gitlabPenalty').value = '0';
+      
+      // Clear overall comment
+      document.getElementById('overallComment').innerHTML = '';
+      
+      // Reset section visual states
+      document.querySelectorAll('.section-block').forEach(section => {
+        section.classList.remove('has-notes');
+        const counter = section.querySelector('.checkbox-count');
+        if (counter) counter.remove();
+      });
+      
+      updateStatisticsOnly();
+    });
+  }
+
+  // Initialize the application
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize section notes for all sections
+    document.querySelectorAll('.section-block').forEach(section => {
+      updateSectionNotes(section);
+    });
+    
+    initializeEventListeners();
+    updateStatisticsOnly();
   });
-
-  // Clear all
-  document.getElementById('clearBtn').addEventListener('click', ()=>{
-    document.querySelectorAll('#tasks input[type="checkbox"]').forEach(cb => cb.checked = false);
-    document.getElementById('feedback').value = '';
-    document.getElementById('gitlabPenalty').value = '0';
-    update();
-  });
-
-  // Export feedback as .txt
-  document.getElementById('exportBtn').addEventListener('click', ()=>{
-    const header = `Marker: ${document.getElementById('markerName').value || ''}\nStudent: ${document.getElementById('studentId').value || ''}\n\n`;
-    const computed = `Computed deduction (from 100): ${document.getElementById('computedDed').textContent}\nFinal score (out of 100): ${document.getElementById('score').textContent}\nGitLab penalty (outside 100): ${document.getElementById('gitlabShown').textContent}\n\n`;
-    const comment = 'Overall Comment:\n' + (document.getElementById('overallComment').innerText || '') + '\n\n';
-    const blob = new Blob([header + computed + comment], {type:'text/plain;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `feedback_${document.getElementById('studentId').value || 'student'}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  // init
-  update();
-
 </script>
 </body>
 </html>
